@@ -1,0 +1,1964 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>AR ผังงานจอมพลัง 🌀</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#070b18',
+            panel: 'rgba(15,23,42,.72)',
+            neon: '#22d3ee',
+            emerald2: '#34d399',
+            sky2: '#60a5fa',
+            amber2: '#fbbf24'
+          },
+          boxShadow: {
+            glow: '0 0 40px rgba(34,211,238,.25)',
+            emerald: '0 0 28px rgba(52,211,153,.35)',
+            amber: '0 0 28px rgba(251,191,36,.35)'
+          },
+          keyframes: {
+            floaty: { '0%,100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-8px)' } },
+            pulseRing: { '0%': { transform: 'scale(.9)', opacity: '.9' }, '100%': { transform: 'scale(1.6)', opacity: '0' } },
+            pop: { '0%': { transform: 'scale(.8) translateY(12px)', opacity: '0' }, '100%': { transform: 'scale(1) translateY(0)', opacity: '1' } },
+            spinSlow: { to: { transform: 'rotate(360deg)' } }
+          },
+          animation: {
+            floaty: 'floaty 4s ease-in-out infinite',
+            pulseRing: 'pulseRing 1.8s ease-out infinite',
+            pop: 'pop .35s cubic-bezier(.2,.9,.3,1.3) both',
+            spinSlow: 'spinSlow 6s linear infinite'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { --emerald:#34d399; --sky:#60a5fa; --amber:#fbbf24; --indigo:#818cf8; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      color: #e2e8f0;
+      background:
+        radial-gradient(1100px 700px at 12% -10%, rgba(34,211,238,.14), transparent 62%),
+        radial-gradient(900px 620px at 100% 0%, rgba(129,140,248,.16), transparent 60%),
+        radial-gradient(800px 700px at 50% 120%, rgba(52,211,153,.10), transparent 60%),
+        #070b18;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .16;
+      background-image:
+        linear-gradient(rgba(148,163,184,.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,.12) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(circle at 50% 40%, black, transparent 78%);
+    }
+    .glass {
+      background: linear-gradient(145deg, rgba(15,23,42,.82), rgba(2,6,23,.62));
+      border: 1px solid rgba(148,163,184,.18);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 24px 70px rgba(0,0,0,.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .glass-soft {
+      background: rgba(15,23,42,.58);
+      border: 1px solid rgba(148,163,184,.14);
+      backdrop-filter: blur(12px);
+    }
+    .neon-text {
+      background: linear-gradient(90deg, #67e8f9, #a5b4fc 45%, #6ee7b7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    #stage {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      min-height: 520px;
+      background:
+        radial-gradient(600px 340px at 20% 20%, rgba(34,211,238,.10), transparent 70%),
+        radial-gradient(520px 420px at 85% 80%, rgba(129,140,248,.12), transparent 70%),
+        rgba(2,6,23,.35);
+    }
+    #cam {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+      opacity: 0;
+      filter: saturate(1.18) contrast(1.06) brightness(.86);
+      transition: opacity .45s ease;
+    }
+    body.ar-on #cam { opacity: .58; }
+    #stageTint {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(2,6,23,.30), rgba(2,6,23,.05) 45%, rgba(2,6,23,.42));
+    }
+    #scene {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: none;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(2,6,23,.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .hidden { display: none !important; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      border-radius: 14px;
+      padding: .72rem 1.1rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease, opacity .16s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0) scale(.98); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn-primary {
+      color: #04121f;
+      background: linear-gradient(120deg, #67e8f9, #a5b4fc 55%, #6ee7b7);
+      box-shadow: 0 12px 34px rgba(34,211,238,.30);
+    }
+    .btn-cyan {
+      color: #052e3b;
+      background: linear-gradient(120deg, #22d3ee, #67e8f9);
+      box-shadow: 0 12px 30px rgba(34,211,238,.25);
+    }
+    .btn-violet {
+      color: #f5f3ff;
+      background: linear-gradient(120deg, #6366f1, #a855f7);
+      box-shadow: 0 12px 30px rgba(139,92,246,.30);
+    }
+    .btn-ghost {
+      color: #cbd5e1;
+      background: rgba(148,163,184,.10);
+      border: 1px solid rgba(148,163,184,.20);
+    }
+    .btn-ghost:hover { background: rgba(148,163,184,.18); }
+    .level-btn {
+      position: relative;
+      height: 38px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #94a3b8;
+      background: rgba(148,163,184,.08);
+      border: 1px solid rgba(148,163,184,.14);
+      transition: all .18s ease;
+    }
+    .level-btn[data-state="current"] {
+      color: #04121f;
+      background: linear-gradient(120deg, #67e8f9, #a5b4fc);
+      box-shadow: 0 8px 22px rgba(34,211,238,.28);
+      border-color: transparent;
+    }
+    .level-btn[data-state="done"] {
+      color: #6ee7b7;
+      background: rgba(52,211,153,.12);
+      border-color: rgba(52,211,153,.35);
+    }
+    .level-btn[data-state="locked"] { opacity: .42; cursor: not-allowed; }
+    .guide-row {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      border-radius: 11px;
+      padding: .38rem .55rem;
+      background: rgba(148,163,184,.07);
+      border: 1px solid rgba(148,163,184,.10);
+      font-size: 11.5px;
+      line-height: 1.15;
+    }
+    .guide-row.is-active {
+      background: rgba(34,211,238,.12);
+      border-color: rgba(34,211,238,.38);
+      box-shadow: 0 0 18px rgba(34,211,238,.12);
+    }
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translate(-50%, 20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .22s ease, transform .22s ease;
+      white-space: nowrap;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    body.game-on .toast { bottom: 84px; z-index: 20; }
+    .modal-card {
+      width: min(560px, 100%);
+      border-radius: 30px;
+      padding: 28px;
+      animation: pop .35s cubic-bezier(.2,.9,.3,1.3) both;
+    }
+    .shape-chip {
+      display: inline-flex;
+      width: 12px;
+      height: 12px;
+      flex: 0 0 12px;
+      align-items: center;
+      justify-content: center;
+    }
+    .chip-terminator { border-radius: 999px; background: var(--emerald); box-shadow: 0 0 12px rgba(52,211,153,.7); }
+    .chip-process { border-radius: 3px; background: var(--sky); box-shadow: 0 0 12px rgba(96,165,250,.7); }
+    .chip-decision { width: 11px; height: 11px; transform: rotate(45deg); border-radius: 2px; background: var(--amber); box-shadow: 0 0 12px rgba(251,191,36,.7); }
+    .scroll-thin { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.35) transparent; }
+    .scroll-thin::-webkit-scrollbar { width: 6px; }
+    .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+    .scroll-thin::-webkit-scrollbar-thumb { background: rgba(148,163,184,.30); border-radius: 99px; }
+
+    /* ---- HOME: level selection ---- */
+    #home {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: clamp(16px, 4vh, 40px) clamp(16px, 5vw, 64px);
+      background:
+        radial-gradient(900px 520px at 50% -10%, rgba(34,211,238,.16), transparent 65%),
+        linear-gradient(180deg, rgba(2,6,23,.55), rgba(2,6,23,.92));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    #home.hidden { display: none !important; }
+    .home-head { text-align: center; margin-bottom: clamp(16px, 3vh, 30px); }
+    .home-head h2 { font-size: clamp(28px, 5vw, 52px); font-weight: 900; line-height: 1.1; }
+    .home-head p { margin-top: 8px; color: #94a3b8; font-size: clamp(12px, 1.6vw, 15px); font-weight: 600; }
+    .home-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: clamp(12px, 2vw, 20px);
+      width: min(1100px, 100%);
+      margin: 0 auto;
+    }
+    .home-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      min-height: 150px;
+      padding: 18px;
+      border-radius: 20px;
+      text-align: left;
+      color: #e2e8f0;
+      cursor: pointer;
+      background: linear-gradient(145deg, rgba(15,23,42,.9), rgba(2,6,23,.7));
+      border: 1px solid rgba(148,163,184,.20);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 18px 44px rgba(0,0,0,.35);
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .home-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(34,211,238,.6);
+      box-shadow: 0 22px 50px rgba(34,211,238,.18);
+    }
+    .home-card:active { transform: translateY(-2px) scale(.99); }
+    .home-card .hc-icon { font-size: 40px; line-height: 1; filter: drop-shadow(0 6px 16px rgba(34,211,238,.4)); }
+    .home-card .hc-num {
+      position: absolute; top: 14px; right: 16px;
+      font-size: 11px; font-weight: 900; color: #22d3ee; letter-spacing: .12em;
+    }
+    .home-card .hc-title { font-size: 16px; font-weight: 900; color: #fff; }
+    .home-card .hc-desc {
+      font-size: 11.5px; line-height: 1.45; color: #94a3b8;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .home-card .hc-go {
+      margin-top: auto; font-size: 11px; font-weight: 900; color: #67e8f9;
+    }
+    .home-card .hc-badge {
+      position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 900;
+      color: #6ee7b7; background: rgba(52,211,153,.14);
+      border: 1px solid rgba(52,211,153,.35); border-radius: 999px; padding: 2px 8px;
+    }
+
+    /* ---- GAME: fullscreen + centered prompt ---- */
+    body.game-on .app-shell {
+      position: fixed; inset: 0; width: 100vw; height: 100vh;
+      max-width: none; margin: 0; padding: 0; gap: 0;
+      z-index: 10;
+    }
+    body.game-on header, body.game-on aside, body.game-on footer { display: none !important; }
+    body.game-on main { display: block; height: 100%; }
+    body.game-on #stage { height: 100%; min-height: 100%; border-radius: 0; }
+    #promptBar {
+      position: absolute;
+      z-index: 12;
+      top: clamp(10px, 2.5vh, 26px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(880px, 92%);
+      text-align: center;
+      pointer-events: none;
+    }
+    #promptBar.hidden { display: none; }
+    .prompt-badge {
+      display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .22em;
+      color: #67e8f9; text-transform: uppercase; margin-bottom: 6px;
+      text-shadow: 0 2px 12px rgba(2,6,23,.9);
+    }
+    .prompt-title {
+      font-size: clamp(18px, 3vw, 30px); font-weight: 900; color: #fff;
+      text-shadow: 0 3px 16px rgba(2,6,23,.95);
+    }
+    .prompt-desc {
+      margin: 6px auto 0; max-width: 820px;
+      font-size: clamp(11px, 1.4vw, 14px); line-height: 1.5; font-weight: 600;
+      color: #cbd5e1; text-shadow: 0 2px 10px rgba(2,6,23,.95);
+    }
+    #gameBar {
+      position: absolute; z-index: 12; top: 12px; left: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    #gameBar.hidden { display: none; }
+    .game-pill {
+      border-radius: 999px; padding: 7px 14px; font-size: 11px; font-weight: 900;
+      color: #cbd5e1; background: rgba(2,6,23,.6); border: 1px solid rgba(148,163,184,.2);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .game-pill b { color: #67e8f9; }
+    #exitGame {
+      border-radius: 999px; padding: 7px 14px; font-size: 11px; font-weight: 900;
+      color: #fca5a5; cursor: pointer;
+      background: rgba(2,6,23,.6); border: 1px solid rgba(248,113,113,.35);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    #exitGame:hover { background: rgba(248,113,113,.18); }
+    #gameVerify {
+      position: absolute; z-index: 12; bottom: 16px; left: 50%; transform: translateX(-50%);
+      width: min(320px, 70%);
+    }
+    #gameVerify.hidden { display: none; }
+    #gameRetry {
+      position: absolute; z-index: 12; bottom: 70px; left: 50%; transform: translateX(-50%);
+      width: min(320px, 70%); padding: .5rem 1rem; font-size: 12px;
+    }
+    #gameRetry.hidden { display: none; }
+    #gameSlotCounter {
+      position: absolute; z-index: 12; bottom: 66px; left: 50%; transform: translateX(-50%);
+      font-size: 11px; font-weight: 900; color: #cbd5e1;
+      text-shadow: 0 2px 10px rgba(2,6,23,.95);
+    }
+    #gameSlotCounter.hidden { display: none; }
+    #gameLives {
+      position: absolute; z-index: 12; bottom: 66px; left: 12px;
+      font-size: 12px; font-weight: 900; color: #fca5a5;
+      text-shadow: 0 2px 10px rgba(2,6,23,.95);
+    }
+    #gameLives .life { letter-spacing: .18em; }
+    .calib-ring {
+      position: relative;
+      width: 126px;
+      height: 126px;
+      border-radius: 999px;
+      border: 2px dashed rgba(129,140,248,.55);
+      display: grid;
+      place-items: center;
+      margin: 0 auto;
+    }
+    .calib-ring::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,211,238,.20);
+      animation: spinSlow 8s linear infinite;
+    }
+    @media (max-width: 1023px) {
+      body { overflow: auto; }
+      #stage { min-height: 460px; }
+      .sidebar { min-height: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="pointer-events-none fixed inset-0 -z-10">
+    <div class="absolute -left-24 top-10 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl animate-floaty"></div>
+    <div class="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl animate-floaty" style="animation-delay:-1.4s"></div>
+  </div>
+
+  <div class="app-shell relative z-10 mx-auto flex h-screen max-w-[1500px] flex-col gap-3 p-3 sm:p-4 lg:p-5">
+    <header class="glass flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 sm:px-5">
+      <div class="flex min-w-0 items-center gap-3">
+        <div class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-cyan-400/25 to-indigo-500/25 text-2xl shadow-glow">🌀</div>
+        <div class="min-w-0">
+          <h1 class="neon-text truncate text-lg font-black tracking-tight sm:text-2xl">AR ผังงานจอมพลัง</h1>
+          <p class="truncate text-[11px] font-semibold text-slate-400">Flowcharts &amp; Conditional Logic · Grade 4–6</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <div id="modeBadge" class="glass-soft flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-black text-slate-300">
+          <span id="modeDot" class="h-2 w-2 rounded-full bg-slate-500"></span>
+          <span id="modeText">Mouse Fallback</span>
+        </div>
+        <div class="glass-soft rounded-full px-3 py-1.5 text-[11px] font-black text-slate-300">
+          Level <span id="levelBadge" class="text-cyan-300">1</span>/7
+        </div>
+        <div class="rounded-full bg-gradient-to-r from-cyan-400 to-emerald-300 px-4 py-1.5 text-[11px] font-black text-slate-950 shadow-glow">
+          SCORE <span id="scoreText">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_332px]">
+      <section id="stage" class="glass">
+        <video id="cam" autoplay playsinline muted></video>
+        <div id="stageTint"></div>
+        <canvas id="scene"></canvas>
+        <div id="gameBar" class="hidden">
+          <button id="exitGame">← เลือกโจทย์</button>
+          <span class="game-pill">LEVEL <b id="gameLevel">1</b>/7</span>
+          <span class="game-pill">SCORE <b id="gameScore">0</b></span>
+          <span id="gameModePill" class="game-pill">Mouse</span>
+        </div>
+        <div id="promptBar" class="hidden">
+          <div class="prompt-badge">โจทย์สำหรับนักเรียน</div>
+          <div id="promptTitle" class="prompt-title">—</div>
+          <p id="promptDesc" class="prompt-desc"></p>
+        </div>
+        <div class="pointer-events-none absolute left-4 top-4 flex flex-col gap-1.5">
+          <span class="glass-soft rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[.18em] text-cyan-300">ถาดการ์ด</span>
+          <span class="text-[10px] font-bold text-slate-500">ลากการ์ดไปวางในช่อง</span>
+        </div>
+        <div class="pointer-events-none absolute right-4 top-4 flex flex-col items-end gap-1.5">
+          <span class="glass-soft rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[.18em] text-indigo-300">เป้าหมายผังงาน</span>
+          <span id="slotCounter" class="text-[10px] font-bold text-slate-500">0 / 6 ช่อง</span>
+        </div>
+        <div id="gameSlotCounter" class="hidden">0 / 6 ช่อง</div>
+        <div id="gameLives" class="hidden">โอกาสใส่ใหม่ 2/2 <span class="life">❤ ❤</span></div>
+        <button id="gameRetry" class="btn btn-violet hidden">ใส่ใหม่อีกครั้ง (เหลือ 2)</button>
+        <button id="gameVerify" class="btn btn-primary hidden">✓ ตรวจคำตอบ</button>
+        <div id="toast" class="toast glass-soft rounded-full px-4 py-2 text-cyan-200"></div>
+      </section>
+
+      <aside class="sidebar glass flex min-h-0 flex-col gap-3 rounded-2xl p-4">
+        <div>
+          <div class="mb-2 flex items-center justify-between">
+            <h2 class="text-[11px] font-black uppercase tracking-[.18em] text-slate-400">LEVEL TRACKER</h2>
+            <span class="text-[10px] font-bold text-cyan-300/80">แตะเพื่อไปเลเวลที่ปลดแล้ว</span>
+          </div>
+          <div id="levelTracker" class="grid grid-cols-5 gap-1.5"></div>
+        </div>
+
+        <div class="glass-soft rounded-2xl p-3">
+          <div class="mb-1 flex items-center gap-2">
+            <span id="levelIcon" class="text-xl">🧼</span>
+            <h3 id="levelTitle" class="text-sm font-black text-white">ล้างมือให้สะอาด</h3>
+          </div>
+          <p id="levelDesc" class="text-[11.5px] leading-relaxed text-slate-400"></p>
+        </div>
+
+        <div class="min-h-0 flex-1">
+          <div class="mb-2 flex items-center justify-between">
+            <h2 class="text-[11px] font-black uppercase tracking-[.18em] text-slate-400">REQUIRED FLOW</h2>
+            <div class="flex items-center gap-2 text-[9px] font-bold text-slate-500">
+              <span class="shape-chip chip-terminator"></span>เริ่ม/จบ
+              <span class="shape-chip chip-process"></span>ทำ
+              <span class="shape-chip chip-decision"></span>ถาม
+            </div>
+          </div>
+          <div id="guideList" class="scroll-thin max-h-full space-y-1.5 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="shrink-0">
+          <button id="verifyBtn" class="btn btn-primary w-full text-sm">✓ Verify Result</button>
+          <p id="hintText" class="mt-2 text-center text-[10.5px] font-semibold text-slate-500">จัดการ์ดให้ตรงลำดับ แล้วกดตรวจสอบ</p>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="glass flex shrink-0 flex-wrap items-center justify-center gap-x-5 gap-y-1 rounded-2xl px-4 py-2 text-[10.5px] font-semibold text-slate-400 sm:text-[11px]">
+      <span><b class="text-cyan-300">1</b> หยิบการ์ดจากถาดซ้าย</span>
+      <span><b class="text-cyan-300">2</b> วางลงช่องขวาตามลำดับ</span>
+      <span><b class="text-cyan-300">3</b> สังเกตเงื่อนไข ใช่ / ไม่</span>
+      <span><b class="text-cyan-300">4</b> กด Verify Result</span>
+      <span id="controlHint" class="text-indigo-300">Control: mouse / touch drag</span>
+    </footer>
+  </div>
+
+  <!-- HOME: choose a flowchart game -->
+  <div id="home" class="hidden">
+    <div class="home-head">
+      <h2 class="neon-text">เลือกเกมผังงาน</h2>
+      <p>7 สถานการณ์ในชีวิตประจำวัน · เลือกโจทย์แล้วเข้าสู่โหมดเต็มจอ</p>
+    </div>
+    <div id="homeGrid" class="home-grid"></div>
+  </div>
+
+  <div id="intro" class="overlay">
+    <div class="glass modal-card text-center">
+      <div class="mx-auto mb-4 grid h-20 w-20 place-items-center rounded-3xl bg-gradient-to-br from-cyan-400/25 to-indigo-500/25 text-5xl shadow-glow animate-floaty">🌀</div>
+      <p class="mb-2 text-[11px] font-black uppercase tracking-[.28em] text-cyan-300">Flowchart AR Lab</p>
+      <h2 class="neon-text text-3xl font-black sm:text-4xl">AR ผังงานจอมพลัง</h2>
+      <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400">
+        จัดการ์ด Start / Process / Decision ให้เป็นผังงานที่ถูกต้อง เรียนรู้เงื่อนไขแบบ <b class="text-amber-300">ถ้า…แล้ว…</b> ผ่าน 7 สถานการณ์ในชีวิตจริง
+      </p>
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <button id="startMouse" class="btn btn-cyan flex-col py-4">
+          <span class="text-xl">🖱️</span>
+          <span>Play with Mouse</span>
+          <span class="text-[10px] font-bold opacity-70">เมาส์ / แตะหน้าจอ</span>
+        </button>
+        <button id="startAR" class="btn btn-violet flex-col py-4">
+          <span class="text-xl">✋</span>
+          <span>Play with AR Camera</span>
+          <span class="text-[10px] font-bold opacity-70">หยิบด้วยท่าบีบนิ้ว</span>
+        </button>
+      </div>
+      <p class="mt-5 text-[10.5px] font-bold text-slate-500">ไม่มีกล้องหรือข้าม AR ได้เลย — ระบบสลับเมาส์ให้ทันที</p>
+    </div>
+  </div>
+
+  <div id="calibration" class="overlay hidden">
+    <div class="glass modal-card text-center">
+      <p class="mb-1 text-[11px] font-black uppercase tracking-[.26em] text-indigo-300">AR CALIBRATION</p>
+      <h2 class="text-2xl font-black text-white">ลงทะเบียนมือทั้งสอง ✋🤚</h2>
+      <p class="mt-2 text-sm text-slate-400">ให้กล้องเห็นมือทั้งสอง แล้วบีบนิ้วโป้งกับนิ้วชี้มือที่จะใช้ค้างไว้ 5 วินาที มือนั้นจะเป็นมือหลัก ระบบจะไม่สลับไปมืออื่นขณะที่ยังติดตามมือหลักได้ — ถ้ามือหลุด จะจับมือใหม่ให้อัตโนมัติโดยไม่ต้องตั้งค่าอีก</p>
+      <div class="calib-ring my-6">
+        <div class="absolute inset-0 animate-pulseRing rounded-full border border-cyan-300/40"></div>
+        <span id="calibCount" class="text-5xl">👌</span>
+      </div>
+      <div id="calibStatus" class="mx-auto mb-2 max-w-sm rounded-xl bg-indigo-400/10 px-4 py-2 text-sm font-bold text-indigo-200">กำลังเปิดกล้อง…</div>
+      <div id="calibWarn" class="mx-auto mb-5 hidden max-w-sm rounded-xl bg-amber-400/10 px-4 py-2 text-xs font-bold text-amber-200">ยังไม่พบมือ — ลองยกมือให้ใกล้กล้องขึ้น</div>
+      <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <button id="calibStart" class="btn btn-primary" disabled>กำลังตรวจจับมือ…</button>
+        <button id="skipAR" class="btn btn-ghost">ข้าม AR → เมาส์</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultModal" class="overlay hidden">
+    <div class="glass modal-card text-center">
+      <div id="resultIcon" class="mx-auto mb-3 text-6xl">🎉</div>
+      <p id="resultKicker" class="mb-1 text-[11px] font-black uppercase tracking-[.26em] text-cyan-300">LEVEL CLEAR</p>
+      <h2 id="resultTitle" class="text-3xl font-black text-white">ยอดเยี่ยม!</h2>
+      <p id="resultText" class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400"></p>
+      <div id="scoreDelta" class="mx-auto my-5 w-fit rounded-full bg-emerald-400/15 px-5 py-2 text-lg font-black text-emerald-300">+100</div>
+      <div class="flex flex-col justify-center gap-2 sm:flex-row">
+        <button id="resultPrimary" class="btn btn-primary">Next Level →</button>
+        <button id="resultSecondary" class="btn btn-ghost">ลองอีกครั้ง</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameOverModal" class="overlay hidden">
+    <div class="glass modal-card text-center">
+      <div class="mb-3 text-6xl">💀</div>
+      <p class="mb-1 text-[11px] font-black uppercase tracking-[.26em] text-rose-400">GAME OVER</p>
+      <h2 class="text-3xl font-black text-white">ใช้โอกาสหมดแล้ว</h2>
+      <p id="gameOverText" class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-400"></p>
+      <div class="my-5 rounded-2xl bg-rose-400/10 px-5 py-4">
+        <div class="text-[11px] font-black uppercase tracking-[.2em] text-rose-300">คะแนนที่ได้</div>
+        <div id="gameOverScore" class="text-5xl font-black text-white">0</div>
+      </div>
+      <div id="gameOverBreakdown" class="mb-5 space-y-1.5 text-left text-xs font-bold text-slate-300"></div>
+      <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <button id="gameOverHome" class="btn btn-primary">กลับไปเลือกโจทย์</button>
+        <button id="gameOverRestart" class="btn btn-ghost">เริ่มใหม่ทั้งหมด ↻</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearScreen" class="overlay hidden">
+    <div class="glass modal-card text-center">
+      <div class="mb-3 flex justify-center gap-2 text-4xl animate-floaty">🏆✨🎊</div>
+      <p class="mb-1 text-[11px] font-black uppercase tracking-[.28em] text-amber-300">ALL 7 LEVELS COMPLETE</p>
+      <h2 class="neon-text text-4xl font-black">ผังงานจอมพลัง!</h2>
+      <p class="mt-3 text-sm text-slate-400">คุณจัดลำดับเงื่อนไขครบทั้ง 7 สถานการณ์แล้ว</p>
+      <div class="my-5 rounded-2xl bg-cyan-400/10 px-5 py-4">
+        <div class="text-[11px] font-black uppercase tracking-[.2em] text-cyan-300">FINAL SCORE</div>
+        <div id="finalScore" class="text-5xl font-black text-white">0</div>
+      </div>
+      <div id="finalBreakdown" class="mb-5 space-y-1.5 text-left text-xs font-bold text-slate-300"></div>
+      <button id="restartBtn" class="btn btn-primary w-full">Restart Lab ↻</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="./hand-tracking.js"></script>
+  <script>
+  (() => {
+  'use strict';
+
+  const COLORS = { terminator:'#34d399', process:'#60a5fa', decision:'#fbbf24' };
+  const SHAPE = { terminator:'terminator', process:'process', decision:'decision' };
+  const SLOT_W = 128, SLOT_H = 76;
+  const COL = { indigo:'#818cf8', indigoSoft:'rgba(129,140,248,.85)', indigoFaint:'rgba(129,140,248,.34)' };
+
+  // selfie camera is CSS-mirrored (scaleX(-1)); keep tracked X in the same
+  // mirrored space so the cursor lands where the user sees their hand.
+  let AR_MIRROR = true;
+  const mx = v => AR_MIRROR ? (1 - v) : v;
+
+  const LEVELS = [
+    {
+      icon:'🍳', title:'ทำอาหารตามสั่ง',
+      desc:'จัดข้าวกะเพราให้ตรงใบสั่ง เมื่อข้าว กะเพรา และไข่ดาวเตรียมไว้แล้ว โดยตัดสินใจจากคำถาม "ขอไข่ดาวไหม?" ส่วนสีเสื้อลูกค้าไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'ปรุงข้าวกะเพรา', text:'Cook basil rice'},
+        {type:'decision', label:'ขอไข่ดาวไหม?', text:'Fried egg?'},
+        {type:'process', label:'เพิ่มไข่ดาว (ใช่)', text:'Add fried egg'},
+        {type:'process', label:'ข้ามไข่ดาว (ไม่)', text:'Skip egg'},
+        {type:'terminator', label:'เสิร์ฟอาหาร', text:'Serve food'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'🪴', title:'ปลูกผักในกระถาง',
+      desc:'ดูแลต้นผักที่เพิ่งปลูก ตามกติกาแปลงผักให้รดน้ำเมื่อดินแห้ง แล้วบันทึกการดูแลทุกครั้ง โดยตัดสินใจจากคำถาม "ดินแห้งไหม?" ส่วนสีกระถางไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'ตรวจดินในกระถาง', text:'Check soil'},
+        {type:'decision', label:'ดินแห้งไหม?', text:'Soil dry?'},
+        {type:'process', label:'รดน้ำ (ใช่)', text:'Water plant'},
+        {type:'process', label:'ข้ามการรดน้ำ (ไม่)', text:'Skip watering'},
+        {type:'terminator', label:'บันทึกการดูแล', text:'Log care'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'🧽', title:'ทำความสะอาดห้อง',
+      desc:'รับเวรดูแลโต๊ะที่ผ่านการปัดฝุ่นแล้ว ถ้ายังมีคราบให้เช็ดก่อนจัดของเข้าที่ โดยตัดสินใจจากคำถาม "พบคราบไหม?" ส่วนสีเสื้อคนทำเวรไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'ตรวจสภาพโต๊ะ', text:'Check table'},
+        {type:'decision', label:'พบคราบไหม?', text:'Stain found?'},
+        {type:'process', label:'เช็ดคราบ (ใช่)', text:'Wipe stain'},
+        {type:'process', label:'ข้ามการเช็ด (ไม่)', text:'Skip wiping'},
+        {type:'terminator', label:'จัดของเข้าที่', text:'Tidy up'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'🎒', title:'จัดกระเป๋าไปโรงเรียน',
+      desc:'จัดหนังสือตามตาราง และนำชุดพละไปเฉพาะวันที่มีเรียนพละ โดยตัดสินใจจากคำถาม "มีวิชาพละไหม?" ส่วนลายกระเป๋าไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'จัดหนังสือตามตาราง', text:'Pack books'},
+        {type:'decision', label:'มีวิชาพละไหม?', text:'PE day?'},
+        {type:'process', label:'ใส่ชุดพละ (ใช่)', text:'Pack sportswear'},
+        {type:'process', label:'ข้ามชุดพละ (ไม่)', text:'Skip sportswear'},
+        {type:'terminator', label:'ปิดกระเป๋า', text:'Close bag'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'📖', title:'ยืมหนังสือห้องสมุด',
+      desc:'ที่จุดยืมด้วยตนเอง หากเครื่องแจ้งว่ายังไม่ได้สแกนเล่มนี้ ให้สแกนก่อนยืนยันการยืม โดยตัดสินใจจากคำถาม "ยังไม่ได้สแกนไหม?" ส่วนสีที่คั่นหนังสือไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'เลือกหนังสือที่จะยืม', text:'Pick book'},
+        {type:'decision', label:'ยังไม่ได้สแกนไหม?', text:'Not scanned?'},
+        {type:'process', label:'สแกนหนังสือ (ใช่)', text:'Scan book'},
+        {type:'process', label:'ข้ามการสแกน (ไม่)', text:'Skip scanning'},
+        {type:'terminator', label:'ยืนยันการยืม', text:'Confirm borrow'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'☔', title:'เตรียมตัวไปโรงเรียนวันฝนตก',
+      desc:'เตรียมของออกจากบ้าน ตามข้อตกลงของโจทย์ ถ้าพยากรณ์ว่าฝนจะตกให้พกร่ม โดยตัดสินใจจากคำถาม "คาดว่าฝนจะตกไหม?" ส่วนสีรองเท้าไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'เช็กพยากรณ์อากาศ', text:'Check forecast'},
+        {type:'decision', label:'คาดว่าฝนจะตกไหม?', text:'Rain expected?'},
+        {type:'process', label:'หยิบร่ม (ใช่)', text:'Take umbrella'},
+        {type:'process', label:'ไม่ต้องพกร่ม (ไม่)', text:'Leave umbrella'},
+        {type:'terminator', label:'ออกจากบ้าน', text:'Leave home'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    },
+    {
+      icon:'🌐', title:'ส่งการบ้านออนไลน์',
+      desc:'เตรียมส่งงานในระบบที่ต้องมีไฟล์แนบ หากยังไม่มีไฟล์ ให้แนบก่อนกดส่ง โดยตัดสินใจจากคำถาม "ยังขาดไฟล์ไหม?" ส่วนสีพื้นหลังหน้าจอไม่มีผลต่อขั้นตอน',
+      flow:[
+        {type:'terminator', label:'เริ่ม', text:'Start'},
+        {type:'process', label:'เปิดหน้าส่งงาน', text:'Open submit page'},
+        {type:'decision', label:'ยังขาดไฟล์ไหม?', text:'File missing?'},
+        {type:'process', label:'แนบไฟล์งาน (ใช่)', text:'Attach file'},
+        {type:'process', label:'ข้ามการแนบไฟล์ (ไม่)', text:'Skip attaching'},
+        {type:'terminator', label:'กดส่งงาน', text:'Submit work'}
+      ],
+      answers:[
+        {yes:3, no:4},
+        {yes:null, no:null},
+        {yes:null, no:null}
+      ]
+    }
+  ];
+
+  const els = {
+    cam: document.getElementById('cam'),
+    canvas: document.getElementById('scene'),
+    stage: document.getElementById('stage'),
+    modeDot: document.getElementById('modeDot'),
+    modeText: document.getElementById('modeText'),
+    scoreText: document.getElementById('scoreText'),
+    levelBadge: document.getElementById('levelBadge'),
+    levelTracker: document.getElementById('levelTracker'),
+    levelIcon: document.getElementById('levelIcon'),
+    levelTitle: document.getElementById('levelTitle'),
+    levelDesc: document.getElementById('levelDesc'),
+    guideList: document.getElementById('guideList'),
+    slotCounter: document.getElementById('slotCounter'),
+    verifyBtn: document.getElementById('verifyBtn'),
+    hintText: document.getElementById('hintText'),
+    controlHint: document.getElementById('controlHint'),
+    toast: document.getElementById('toast'),
+    intro: document.getElementById('intro'),
+    calibration: document.getElementById('calibration'),
+    calibStatus: document.getElementById('calibStatus'),
+    calibCount: document.getElementById('calibCount'),
+    calibWarn: document.getElementById('calibWarn'),
+    calibStart: document.getElementById('calibStart'),
+    skipAR: document.getElementById('skipAR'),
+    resultModal: document.getElementById('resultModal'),
+    resultIcon: document.getElementById('resultIcon'),
+    resultKicker: document.getElementById('resultKicker'),
+    resultTitle: document.getElementById('resultTitle'),
+    resultText: document.getElementById('resultText'),
+    scoreDelta: document.getElementById('scoreDelta'),
+    resultPrimary: document.getElementById('resultPrimary'),
+    resultSecondary: document.getElementById('resultSecondary'),
+    clearScreen: document.getElementById('clearScreen'),
+    finalScore: document.getElementById('finalScore'),
+    finalBreakdown: document.getElementById('finalBreakdown'),
+    restartBtn: document.getElementById('restartBtn'),
+    home: document.getElementById('home'),
+    homeGrid: document.getElementById('homeGrid'),
+    gameBar: document.getElementById('gameBar'),
+    gameLevel: document.getElementById('gameLevel'),
+    gameScore: document.getElementById('gameScore'),
+    gameModePill: document.getElementById('gameModePill'),
+    exitGame: document.getElementById('exitGame'),
+    promptBar: document.getElementById('promptBar'),
+    promptTitle: document.getElementById('promptTitle'),
+    promptDesc: document.getElementById('promptDesc'),
+    gameSlotCounter: document.getElementById('gameSlotCounter'),
+    gameVerify: document.getElementById('gameVerify'),
+    gameLives: document.getElementById('gameLives'),
+    gameRetry: document.getElementById('gameRetry'),
+    gameOver: document.getElementById('gameOverModal'),
+    gameOverScore: document.getElementById('gameOverScore'),
+    gameOverText: document.getElementById('gameOverText'),
+    gameOverBreakdown: document.getElementById('gameOverBreakdown'),
+    gameOverHome: document.getElementById('gameOverHome'),
+    gameOverRestart: document.getElementById('gameOverRestart')
+  };
+
+  const S = {
+    mode: 'mouse',
+    running: false,
+    level: 0,
+    score: 0,
+    best: new Array(LEVELS.length).fill(null),
+    cards: [],
+    slots: [],
+    grabbed: null,
+    arHands: [],
+    arPrimaryID: null,
+    pointer: { x: 0, y: 0, tx: 0, ty: 0, down: false },
+    hover: null,
+    cursorState: 'normal',
+    particles: [],
+    w: 0,
+    h: 0,
+    dpr: 1
+  };
+  const MAX_WRONGS = 3;     // first try + 2 retries = 3 wrong submissions ends the game
+  function resetAttempts() { S.wrongs = 0; renderLives(); }
+  function renderLives() {
+    const retries = Math.max(0, MAX_WRONGS - (S.wrongs || 0));
+    const hearts = [];
+    for (let i = 0; i < MAX_WRONGS - 1; i++) {
+      hearts.push('<span class="life" style="color:' + (i < retries ? '#f87171' : 'rgba(148,163,184,.35)') + '">❤</span>');
+    }
+    els.gameLives.innerHTML = 'โอกาสใส่ใหม่ ' + retries + '/2 ' + hearts.join(' ');
+    els.gameRetry.textContent = 'ใส่ใหม่อีกครั้ง (เหลือ ' + retries + ')';
+    updateRetryUI();
+  }
+
+  window.APP_STATE = S;
+  window.LEVELS = LEVELS;
+
+  /* ---- layout helpers ---- */
+  function cardLabel(c) {
+    return LEVELS[c.level].flow[c.flowIndex].label;
+  }
+
+  function buildLevel(idx, keepAttempts) {
+    resetARInteraction();
+    const lvl = LEVELS[idx];
+    S.level = idx;
+    S.gameOver = false;
+    S.cards = [];
+    S.slots = [];
+    S.grabbed = null;
+    S.particles = [];
+
+    const order = lvl.flow.map((f, i) => i);
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    if (order[0] === 0 && lvl.flow.length > 2 && Math.random() < 0.6) {
+      [order[0], order[1]] = [order[1], order[0]];
+    }
+
+    const trayX = S.w * 0.06;
+    const areaTop = 92;
+    const areaBot = S.h - 46;
+    const perCol = Math.max(2, Math.min(3, Math.floor((areaBot - areaTop) / 92)));
+    order.forEach((fi, i) => {
+      const col = Math.floor(i / perCol);
+      const row = i % perCol;
+      S.cards.push({
+        id: 'c' + idx + '_' + fi,
+        level: idx,
+        flowIndex: fi,
+        x: trayX + col * 150 + 60,
+        y: areaTop + 34 + row * ((areaBot - areaTop) / perCol),
+        tx: 0, ty: 0,
+        vx: (Math.random() - .5) * .3,
+        vy: (Math.random() - .5) * .3,
+        phase: Math.random() * Math.PI * 2,
+        locked: false,
+        scale: 1,
+        glow: 0
+      });
+    });
+
+    const n = lvl.flow.length;
+    lvl.flow.forEach((f, i) => {
+      S.slots.push({
+        index: i,
+        x: 0, y: 0,
+        w: SLOT_W,
+        h: SLOT_H,
+        filled: null
+      });
+    });
+
+    els.levelIcon.textContent = lvl.icon;
+    els.levelTitle.textContent = lvl.title;
+    els.levelDesc.textContent = lvl.desc;
+    els.levelBadge.textContent = idx + 1;
+    els.gameLevel.textContent = idx + 1;
+    els.slotCounter.textContent = '0 / ' + n + ' ช่อง';
+    els.promptTitle.textContent = lvl.title;
+    els.promptDesc.textContent = lvl.desc;
+    layoutLevel();
+    renderGuide();
+    renderTracker();
+    els.verifyBtn.disabled = false;
+    els.hintText.textContent = 'จัดการ์ดให้ตรงลำดับ แล้วกดตรวจสอบ';
+    if (!keepAttempts) resetAttempts();
+    updateSlotCounter();
+    updateRetryUI();
+  }
+
+  // Only the answer area is arranged as an orthogonal flowchart.
+  // The original floating-card tray and the rest of the game UI stay unchanged.
+  function layoutLevel() {
+    const gameOn = document.body.classList.contains('game-on');
+    const stageRect = els.stage.getBoundingClientRect();
+    const promptRect = els.promptBar.getBoundingClientRect();
+    const top = gameOn ? Math.max(92, Math.ceil(promptRect.bottom-stageRect.top)+22) : 92;
+    const availableH = Math.max(210,S.h-top-118);
+    const boardH = Math.min(540,availableH);
+    const board = {x:S.w*.52,y:top+(availableH-boardH)/2,w:S.w*.46,h:boardH};
+    const slotW = Math.min(SLOT_W,(board.w-60)/2);
+    const slotH = Math.min(SLOT_H,(board.h-72)/4);
+    const diagramW = Math.min(460,board.w);
+    const diagramX = board.x+(board.w-diagramW)/2;
+    const mainX = diagramX+8+slotW/2;
+    const sideX = diagramX+diagramW-32-slotW/2;
+    const firstY = board.y+slotH/2;
+    const pitch = (board.h-slotH)/3;
+    // Start → Process → [condition on the right] → Yes / No → End.
+    const positions = [[mainX,0], [mainX,1], [sideX,1], [mainX,2], [sideX,2], [mainX,3]];
+    S.layout = {board, slotW, slotH, mainX, sideX, pitch};
+    S.slots.forEach((slot, i) => {
+      slot.x = positions[i][0]; slot.y = firstY + positions[i][1] * pitch;
+      slot.w = slotW; slot.h = slotH;
+    });
+    S.cards.forEach(c => {
+      if (c.slotIndex != null) {
+        const slot = S.slots[c.slotIndex];
+        c.x = slot.x; c.y = slot.y;
+      }
+    });
+    S.routes = flowRoutes();
+  }
+
+  // Every segment is horizontal or vertical; branch actions never link to each other.
+  function flowRoutes() {
+    const slots = S.slots;
+    if (!slots.length) return [];
+    const lvl = LEVELS[S.level];
+    const decisionIdx = lvl.flow.findIndex(f => f.type === 'decision');
+    const branches = lvl.answers.find(a => a.yes != null && a.no != null);
+    const d = slots[decisionIdx], yes = slots[branches.yes], no = slots[branches.no];
+    const end = slots[slots.length - 1];
+    const bottom = s => [s.x, s.y + s.h / 2 + 2];
+    const top = s => [s.x, s.y - s.h / 2 - 5];
+    const left = s => [s.x - s.w / 2 - 5, s.y];
+    const right = s => [s.x + s.w / 2 + 2, s.y];
+    const splitY = (d.y + d.h / 2 + yes.y - yes.h / 2) / 2;
+    const mergeY = (yes.y + yes.h / 2 + end.y - end.h / 2) / 2;
+    const railX = no.x + no.w / 2 + 24;
+    return [
+      { from:0, to:1, points:[bottom(slots[0]), top(slots[1])], color:COL.indigoSoft },
+      { from:1, to:decisionIdx, points:[right(slots[1]), left(d)], color:COL.indigoSoft },
+      { from:decisionIdx, to:branches.yes, points:[bottom(d), [d.x,splitY], [yes.x,splitY], top(yes)], color:'#34d399', label:'ใช่', badge:[(d.x+yes.x)/2,splitY] },
+      { from:decisionIdx, to:branches.no, points:[right(d), [railX,d.y], [railX,no.y], [no.x+no.w/2+5,no.y]], color:'#fb7185', label:'ไม่', badge:[railX,(d.y+no.y)/2] },
+      { from:branches.yes, to:5, points:[bottom(yes), [yes.x,mergeY]], color:'#34d399', arrow:false },
+      { from:branches.no, to:5, points:[bottom(no), [no.x,mergeY], [end.x,mergeY]], color:'#fb7185', arrow:false },
+      { from:null, to:5, points:[[end.x,mergeY], top(end)], color:COL.indigoSoft }
+    ];
+  }
+
+  function retryWithoutReset() {
+    buildLevel(S.level, true);
+  }
+
+  function renderGuide() {
+    const lvl = LEVELS[S.level];
+    els.guideList.innerHTML = '';
+    lvl.flow.forEach((f, i) => {
+      const row = document.createElement('div');
+      row.className = 'guide-row' + (slotAt(i) ? ' is-active' : '');
+      row.innerHTML =
+        '<span class="text-[10px] font-black text-slate-500 w-4">' + (i + 1) + '</span>' +
+        '<span class="shape-chip chip-' + f.type + '"></span>' +
+        '<span class="font-bold text-slate-200">' + f.label + '</span>' +
+        '<span class="ml-auto text-[10px] font-black ' + (f.type === 'decision' ? 'text-amber-300' : 'text-slate-500') + '">' +
+          (f.type === 'decision' ? 'ใช่/ไม่' : f.type === 'terminator' ? 'S/E' : 'DO') + '</span>';
+      els.guideList.appendChild(row);
+    });
+  }
+
+  function renderTracker() {
+    els.levelTracker.innerHTML = '';
+    LEVELS.forEach((lvl, i) => {
+      const b = document.createElement('button');
+      const st = i < S.level ? 'done' : i === S.level ? 'current' : (S.best[i] !== null ? 'done' : 'locked');
+      b.className = 'level-btn';
+      b.dataset.state = st;
+      b.textContent = lvl.icon + ' L' + (i + 1);
+      b.disabled = st === 'locked';
+      b.title = lvl.title;
+      b.addEventListener('click', () => {
+        if (st === 'locked') { toast('ยังไม่ปลดล็อกเลเวลนี้', 'warn'); return; }
+        closeModal();
+        buildLevel(i);
+      });
+      els.levelTracker.appendChild(b);
+    });
+  }
+
+  function slotAt(i) { return S.slots[i] && S.slots[i].filled; }
+
+  function updateSlotCounter() {
+    const n = S.slots.filter(s => s.filled).length;
+    els.slotCounter.textContent = n + ' / ' + S.slots.length + ' ช่อง';
+    els.gameSlotCounter.textContent = n + ' / ' + S.slots.length + ' ช่อง';
+  }
+
+  /* ---- HOME / GAME navigation ---- */
+  function renderHome() {
+    els.homeGrid.innerHTML = '';
+    LEVELS.forEach((lvl, i) => {
+      const card = document.createElement('button');
+      card.className = 'home-card';
+      const done = S.best[i] !== null;
+      card.innerHTML =
+        '<span class="hc-num">LEVEL ' + (i + 1) + '</span>' +
+        (done ? '<span class="hc-badge">✓ ผ่านแล้ว</span>' : '') +
+        '<span class="hc-icon">' + lvl.icon + '</span>' +
+        '<span class="hc-title">' + lvl.title + '</span>' +
+        '<span class="hc-desc">' + lvl.desc + '</span>' +
+        '<span class="hc-go">เริ่มเกม →</span>';
+      card.addEventListener('click', () => startGame(i));
+      els.homeGrid.appendChild(card);
+    });
+  }
+
+  function showHome() {
+    S.running = false;
+    calibHandSince = null;
+    calibEntered = false;
+    if (els.calibCount) els.calibCount.textContent = '👌';
+    els.resultModal.classList.add('hidden');
+    els.clearScreen.classList.add('hidden');
+    els.gameOver.classList.add('hidden');
+    document.body.classList.remove('game-on', 'ar-on');
+    stopAR();
+    els.modeText.textContent = 'Mouse Fallback';
+    els.modeDot.className = 'h-2 w-2 rounded-full bg-slate-500';
+    els.home.classList.remove('hidden');
+    els.intro.classList.add('hidden');
+    els.calibration.classList.add('hidden');
+    els.gameBar.classList.add('hidden');
+    els.promptBar.classList.add('hidden');
+    els.gameSlotCounter.classList.add('hidden');
+    els.gameVerify.classList.add('hidden');
+    els.gameLives.classList.add('hidden');
+    els.gameRetry.classList.add('hidden');
+    els.gameOver.classList.add('hidden');
+    renderHome();
+  }
+
+  function startGame(idx) {
+    document.body.classList.add('game-on');
+    els.home.classList.add('hidden');
+    els.intro.classList.add('hidden');
+    els.calibration.classList.add('hidden');
+    els.gameBar.classList.remove('hidden');
+    els.promptBar.classList.remove('hidden');
+    els.gameSlotCounter.classList.remove('hidden');
+    els.gameVerify.classList.remove('hidden');
+    els.gameLives.classList.remove('hidden');
+    els.gameScore.textContent = S.score;
+    resize();
+    buildLevel(idx);
+    // choose control mode before play starts
+    els.intro.classList.remove('hidden');
+  }
+
+  function enterGameplay(mode) {
+    document.body.classList.add('game-on');
+    els.gameModePill.textContent = mode === 'ar' ? 'AR มือ' : 'Mouse';
+    const lvl = LEVELS[S.level];
+    els.promptTitle.textContent = lvl.title;
+    els.promptDesc.textContent = lvl.desc;
+    els.gameLevel.textContent = S.level + 1;
+    els.gameScore.textContent = S.score;
+  }
+
+  function updateRetryUI() {
+    const retries = Math.max(0, MAX_WRONGS - (S.wrongs || 0));
+    els.gameRetry.classList.toggle('hidden', !(retries > 0 && !S.gameOver));
+  }
+
+  /* ---- drawing ---- */
+  const ctx = els.canvas.getContext('2d');
+
+  function resize() {
+    const r = els.stage.getBoundingClientRect();
+    S.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    S.w = Math.max(320, r.width);
+    S.h = Math.max(320, r.height);
+    els.canvas.width = S.w * S.dpr;
+    els.canvas.height = S.h * S.dpr;
+    els.canvas.style.width = S.w + 'px';
+    els.canvas.style.height = S.h + 'px';
+    ctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+    if (S.cards.length) buildLevel(S.level);
+  }
+
+  function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawShape(shape, cx, cy, w, h, color, label, sub, glow, filled) {
+    ctx.save();
+    if (glow > 0) {
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 16 + glow * 16;
+    }
+    ctx.fillStyle = 'rgba(10,16,32,.88)';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.4;
+    if (shape === 'terminator') {
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, w / 2, h / 2, 0, 0, Math.PI * 2);
+      ctx.fill(); ctx.stroke();
+    } else if (shape === 'decision') {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - h / 2);
+      ctx.lineTo(cx + w / 2, cy);
+      ctx.lineTo(cx, cy + h / 2);
+      ctx.lineTo(cx - w / 2, cy);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else {
+      rr(cx - w / 2, cy - h / 2, w, h, 10);
+      ctx.fill(); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = '800 12px ui-sans-serif, system-ui, sans-serif';
+    ctx.fillText(label, cx, cy + (sub ? -2 : 4), w-8);
+    if (sub) {
+      ctx.fillStyle = 'rgba(148,163,184,.85)';
+      ctx.font = '700 10px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillText(sub, cx, cy + 12, w-8);
+    }
+    if (filled) {
+      ctx.fillStyle = color;
+      ctx.font = '900 9px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillText('✓', cx + w / 2 - 10, cy - h / 2 + 12);
+    }
+    ctx.restore();
+  }
+
+  function drawCard(c, t) {
+    const f = LEVELS[c.level].flow[c.flowIndex];
+    const col = COLORS[f.type];
+    const bob = c.locked ? 0 : Math.sin(t * 1.6 + c.phase) * 4;
+    const x = c.x, y = c.y + bob;
+    const grabbed = !!cardHolder(c);
+    const slot = c.slotIndex != null ? S.slots[c.slotIndex] : null;
+    const w = slot ? Math.min(118,slot.w-8) : 118;
+    const h = slot ? Math.min(74,slot.h-6) : 74;
+    drawShape(f.type, x, y, w, h, col, f.label, f.text, grabbed ? 1 : c.glow, c.locked);
+    c._drawY = y;
+    if (!c.locked) {
+      ctx.save();
+      ctx.globalAlpha = .55;
+      ctx.fillStyle = col;
+      ctx.font = '900 9px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('PINCH / DRAG', x, y + 48);
+      ctx.restore();
+    }
+  }
+
+  function drawSlot(s) {
+    ctx.save();
+    ctx.setLineDash(s.filled ? [] : [7,6]);
+    ctx.strokeStyle = s.filled ? 'rgba(148,163,184,.35)' : 'rgba(129,140,248,.55)';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = s.filled ? 'rgba(15,23,42,.18)' : 'rgba(30,41,59,.28)';
+    rr(s.x - s.w / 2, s.y - s.h / 2, s.w, s.h, 12);
+    ctx.fill(); ctx.stroke();
+    if (!s.filled) {
+      ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(148,163,184,.75)';
+      ctx.font = '800 10px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillText('SLOT '+(s.index+1),s.x,s.y+4,s.w-10);
+    }
+    ctx.restore();
+  }
+
+  function drawEdges() {
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 2;
+    S.routes.forEach(route => {
+      const points = route.points;
+      ctx.strokeStyle = route.color;
+      ctx.shadowColor = route.color;
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      points.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y));
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      if (route.arrow !== false) {
+        const [x,y] = points[points.length - 1];
+        const [px,py] = points[points.length - 2];
+        // Orient the arrow from its final segment, not a fixed angle.
+        ctx.save();
+        ctx.translate(x,y); ctx.rotate(Math.atan2(y-py, x-px));
+        ctx.fillStyle = route.color;
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-7,-4); ctx.lineTo(-7,4); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    });
+    S.routes.filter(r => r.label).forEach(route => {
+      const [x,y] = route.badge;
+      ctx.font = '800 10px ui-sans-serif, system-ui, sans-serif';
+      const width = ctx.measureText(route.label).width + 14;
+      ctx.fillStyle = '#101b30';
+      ctx.strokeStyle = route.color;
+      ctx.lineWidth = 1;
+      rr(x-width/2, y-10, width, 20, 8); ctx.fill(); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = route.color;
+      ctx.fillText(route.label,x,y);
+    });
+    const merge = S.routes[S.routes.length - 1].points[0];
+    ctx.fillStyle = '#a5b4fc';
+    ctx.beginPath(); ctx.arc(merge[0],merge[1],3.5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function burst(x, y, color) {
+    for (let i = 0; i < 26; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = 1.6 + Math.random() * 5.2;
+      S.particles.push({
+        x, y,
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - 1.2,
+        life: 1,
+        color: Math.random() < .45 ? color : (Math.random() < .5 ? '#67e8f9' : '#a5b4fc'),
+        size: 2 + Math.random() * 3.5
+      });
+    }
+  }
+
+  function drawParticles(dt) {
+    ctx.save();
+    for (let i = S.particles.length - 1; i >= 0; i--) {
+      const p = S.particles[i];
+      p.x += p.vx * dt * 60;
+      p.y += p.vy * dt * 60;
+      p.vy += 0.16 * dt * 60;
+      p.life -= dt * 1.35;
+      if (p.life <= 0) { S.particles.splice(i, 1); continue; }
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawCursor(t, actor = S) {
+    const p = actor.pointer;
+    const state = actor.cursorState;
+    const col = state === 'hover' ? '#fbbf24' : state === 'success' ? '#34d399' : state === 'miss' ? '#f87171' : actor.color || '#38bdf8';
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.shadowColor = col;
+    ctx.shadowBlur = 18;
+    ctx.strokeStyle = col;
+    ctx.fillStyle = col;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.arc(0, 0, state === 'success' ? 18 : 12, 0, Math.PI * 2);
+    if (state !== 'hover') ctx.fill();
+    else { ctx.globalAlpha = .35; ctx.fill(); ctx.globalAlpha = 1; }
+    ctx.shadowBlur = 0;
+    if (state === 'hover') {
+      ctx.save();
+      ctx.rotate(t * 2.4);
+      ctx.setLineDash([5, 7]);
+      ctx.beginPath();
+      ctx.arc(0, 0, 23, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.globalAlpha = .45;
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    if (state === 'success') {
+      ctx.font = '20px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#052e2b';
+      ctx.fillText('👌', 0, 1);
+    }
+    if (S.mode === 'ar') {
+      ctx.restore();
+      return;
+    }
+    ctx.fillStyle = 'rgba(226,232,240,.8)';
+    ctx.font = '700 9px ui-sans-serif, system-ui, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(state === 'hover' ? 'LOCK' : state === 'success' ? 'HOLD' : state === 'miss' ? 'MISS' : 'AIM', 26, 4);
+    ctx.restore();
+  }
+
+  function drawSkeleton(landmarks, color = 'rgba(129,140,248,.70)') {
+    if (!landmarks || !landmarks.length) return;
+    const CONNECTIONS = [
+      [0,1],[1,2],[2,3],[3,4],
+      [0,5],[5,6],[6,7],[7,8],
+      [5,9],[9,10],[10,11],[11,12],
+      [9,13],[13,14],[14,15],[15,16],
+      [13,17],[17,18],[18,19],[19,20],[0,17]
+    ];
+    const pts = landmarks.map(cameraPoint);
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.4;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 9;
+    CONNECTIONS.forEach(([a,b]) => {
+      if (!pts[a] || !pts[b]) return;
+      ctx.beginPath();
+      ctx.moveTo(pts[a].x, pts[a].y);
+      ctx.lineTo(pts[b].x, pts[b].y);
+      ctx.stroke();
+    });
+    ctx.shadowBlur = 0;
+    pts.forEach((p, i) => {
+      ctx.beginPath();
+      ctx.fillStyle = i === 4 || i === 8 ? '#67e8f9' : 'rgba(165,180,252,.92)';
+      ctx.arc(p.x, p.y, i === 4 || i === 8 ? 5 : 3.4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function cardHolder(card) {
+    if (S.grabbed && S.grabbed.card === card) return S;
+    return Array.from(arActors.values()).find(actor => actor.grabbed && actor.grabbed.card === card);
+  }
+
+  function hitCard(x, y) {
+    for (let i = S.cards.length - 1; i >= 0; i--) {
+      const c = S.cards[i];
+      if (c.locked || cardHolder(c)) continue;
+      const dy = c._drawY == null ? c.y : c._drawY;
+      if (Math.abs(x - c.x) < 66 && Math.abs(y - dy) < 42) return c;
+    }
+    return null;
+  }
+
+  function tryGrab(x, y, actor = S) {
+    if (!canPlay()) return false;
+    if (actor!==S && actor.id!==S.arPrimaryID) return false;
+    if (actor.grabbed) return false;
+    const c = hitCard(x, y);
+    actor.cursorState = c ? 'success' : 'miss';
+    if (c) {
+      actor.grabbed = {card:c,ox:c.x-x,oy:c.y-y,fromSlot:c.slotIndex??null,origin:{x:c.x,y:c.y}};
+      if (c.slotIndex != null) {
+        const s = S.slots[c.slotIndex];
+        if (s) s.filled = null;
+        c.slotIndex = null;
+      }
+    }
+    setTimeout(() => { if (!actor.grabbed) actor.cursorState = 'normal'; }, 260);
+    return !!c;
+  }
+
+  function tryRelease(actor = S) {
+    if (!actor.grabbed) return;
+    if (actor!==S && actor.id!==S.arPrimaryID) { cancelARGrab(actor); return; }
+    const c = actor.grabbed.card;
+    const p = actor.pointer;
+    // AR release uses the rendered cursor, so the card never snaps to an unseen raw point.
+    c.x = Math.max(58, Math.min(S.w-58,(actor === S ? p.tx : p.x)+actor.grabbed.ox));
+    c.y = Math.max(48, Math.min(S.h-48,(actor === S ? p.ty : p.y)+actor.grabbed.oy));
+    actor.grabbed = null;
+    let placed = false;
+    for (const s of S.slots) {
+      if (s.filled) continue;
+      if (Math.abs(c.x - s.x) < s.w / 2 + 8 && Math.abs(c.y - s.y) < s.h / 2 + 10) {
+        const wanted = LEVELS[S.level].flow[s.index].type;
+        const have = LEVELS[c.level].flow[c.flowIndex].type;
+        if (wanted !== have) {
+          toast('ยังวางบล็อกนี้ในช่องนี้ไม่ได้ ลองจัดใหม่', 'warn');
+          break;
+        }
+        s.filled = c;
+        c.slotIndex = s.index;
+        c.locked = true;
+        c.x = s.x; c.y = s.y;
+        c.glow = 1;
+        placed = true;
+        burst(s.x, s.y, COLORS[wanted]);
+        updateSlotCounter();
+        const n = S.slots.filter(z => z.filled).length;
+        if (n === S.slots.length) toast('ครบทุกช่องแล้ว! กด Verify Result', 'ok');
+        else toast('สแนปเข้าช่องที่ ' + (s.index + 1) + ' ✓', 'ok');
+        break;
+      }
+    }
+    if (!placed) {
+      const overFilled = S.slots.some(s => s.filled && s.filled !== c &&
+        Math.abs(c.x - s.x) < s.w / 2 + 6 && Math.abs(c.y - s.y) < s.h / 2 + 6);
+      if (overFilled) toast('ช่องนี้มีการ์ดอยู่แล้ว', 'warn');
+    }
+    actor.cursorState = 'normal';
+  }
+
+  function canPlay() {
+    return S.running && !S.gameOver && [els.intro,els.calibration,els.resultModal,els.clearScreen,els.gameOver]
+      .every(el => el.classList.contains('hidden'));
+  }
+
+  function typeTH(t) {
+    return t === 'terminator' ? 'เริ่ม/จบ' : t === 'decision' ? 'ถาม (Decision)' : 'ทำ (Process)';
+  }
+
+  function pointerPos(e) {
+    const r = els.canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return { x: p.clientX - r.left, y: p.clientY - r.top };
+  }
+
+  function onMouseDown(e) {
+    if (S.mode === 'ar' || !canPlay()) return;
+    e.preventDefault();
+    const p = pointerPos(e);
+    S.pointer.tx = p.x; S.pointer.ty = p.y;
+    S.pointer.x = p.x; S.pointer.y = p.y;
+    S.pointer.down = true;
+    tryGrab(p.x, p.y);
+  }
+  function onMouseMove(e) {
+    if (S.mode === 'ar' || !canPlay()) return;
+    const p = pointerPos(e);
+    S.pointer.tx = p.x; S.pointer.ty = p.y;
+    if (S.grabbed) return;
+    const h = hitCard(p.x, p.y);
+    if (h !== S.hover) {
+      S.hover = h;
+      S.cursorState = h ? 'hover' : 'normal';
+    }
+  }
+  function onMouseUp() {
+    if (S.mode === 'ar' || !S.running) return;
+    S.pointer.down = false;
+    tryRelease();
+  }
+
+  els.canvas.addEventListener('mousedown', onMouseDown);
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+  els.canvas.addEventListener('touchstart', e => { e.preventDefault(); onMouseDown(e); }, { passive: false });
+  els.canvas.addEventListener('touchmove', e => { e.preventDefault(); onMouseMove(e); }, { passive: false });
+  window.addEventListener('touchend', e => { onMouseUp(e); });
+  window.addEventListener('touchcancel', () => {
+    if (S.grabbed) {
+      S.grabbed = null; S.pointer.down = false; S.cursorState = 'normal';
+    }
+  });
+
+  let toastTimer = null;
+  function toast(msg, kind) {
+    els.toast.textContent = msg;
+    els.toast.style.color = kind === 'warn' ? '#fcd34d' : kind === 'fail' ? '#fca5a5' : '#6ee7b7';
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => els.toast.classList.remove('show'), 2200);
+  }
+
+  function closeModal() {
+    els.resultModal.classList.add('hidden');
+    els.clearScreen.classList.add('hidden');
+  }
+
+  els.verifyBtn.addEventListener('click', () => {
+    if (!canPlay()) return;
+    const n = S.slots.filter(s => s.filled).length;
+    if (n < S.slots.length) {
+      toast('ยังวางไม่ครบทุกช่อง (' + n + '/' + S.slots.length + ')', 'warn');
+      return;
+    }
+    let ok = true;
+    S.slots.forEach(s => {
+      if (!s.filled || s.filled.flowIndex !== s.index) ok = false;
+    });
+    if (ok) {
+      const base = 100;
+      const bonus = S.best[S.level] === null ? 40 : 0;
+      const gained = base + bonus;
+      if (S.best[S.level] === null) S.best[S.level] = gained;
+      S.score += gained;
+      els.scoreText.textContent = S.score;
+      S.slots.forEach(s => { if (s.filled) burst(s.x, s.y, COLORS[LEVELS[S.level].flow[s.index].type]); });
+      showResult(true, gained);
+    } else {
+      S.wrongs = (S.wrongs || 0) + 1;
+      renderLives();
+      if (S.wrongs >= MAX_WRONGS) {
+        S.gameOver = true;
+        showGameOver();
+      } else {
+        showResult(false, 0);
+      }
+    }
+  });
+
+  els.gameVerify.addEventListener('click', () => els.verifyBtn.click());
+  els.gameRetry.addEventListener('click', () => {
+    closeModal();
+    buildLevel(S.level);
+  });
+  els.exitGame.addEventListener('click', showHome);
+
+  function showGameOver() {
+    const lvl = LEVELS[S.level];
+    els.resultModal.classList.add('hidden');
+    els.gameOverScore.textContent = S.score;
+    els.gameOverText.textContent = 'โจทย์ "' + lvl.title + '" ใส่ผิดครบ 3 ครั้ง — เกมจบ สรุปคะแนนที่ได้ทั้งหมด';
+    els.gameOverBreakdown.innerHTML = LEVELS.map((l, i) => {
+      const sc = S.best[i];
+      return '<div class="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5">' +
+        '<span>' + l.icon + '</span>' +
+        '<span class="flex-1 truncate">' + l.title + '</span>' +
+        '<span class="' + (sc ? 'text-emerald-300' : 'text-slate-500') + '">' + (sc ? '+' + sc : '—') + '</span>' +
+        '</div>';
+    }).join('');
+    els.gameRetry.classList.add('hidden');
+    els.gameVerify.classList.add('hidden');
+    els.gameOver.classList.remove('hidden');
+  }
+  els.gameOverHome.addEventListener('click', () => { closeModal(); showHome(); });
+  els.gameOverRestart.addEventListener('click', () => {
+    S.score = 0;
+    S.best = new Array(LEVELS.length).fill(null);
+    els.scoreText.textContent = '0';
+    els.gameScore.textContent = '0';
+    closeModal();
+    document.body.classList.add('game-on');
+    els.gameVerify.classList.remove('hidden');
+    els.gameLives.classList.remove('hidden');
+    buildLevel(0);
+  });
+
+  function showResult(win, gained) {
+    const lvl = LEVELS[S.level];
+    els.resultModal.classList.remove('hidden');
+    if (win) {
+      const last = S.level === LEVELS.length - 1;
+      els.gameScore.textContent = S.score;
+      els.resultIcon.textContent = '🎉';
+      els.resultKicker.textContent = 'LEVEL CLEAR';
+      els.resultKicker.style.color = '#6ee7b7';
+      els.resultTitle.textContent = 'ผังงานถูกต้อง!';
+      els.resultText.textContent = 'ลำดับ "' + lvl.title + '" ถูกต้องทุกช่อง — เงื่อนไข ถ้า/แล้ว ทำงานสมบูรณ์';
+      els.scoreDelta.textContent = '+' + gained;
+      els.scoreDelta.className = 'mx-auto my-5 w-fit rounded-full bg-emerald-400/15 px-5 py-2 text-lg font-black text-emerald-300';
+      els.resultPrimary.textContent = last ? 'ดูผลรวมทั้งหมด →' : 'Next Level →';
+      els.resultSecondary.textContent = 'เล่นซ้ำเลเวลนี้';
+      els.resultPrimary.onclick = () => {
+        closeModal();
+        if (last) showClear();
+        else buildLevel(S.level + 1);
+      };
+      els.resultSecondary.onclick = () => { closeModal(); buildLevel(S.level); };
+    } else {
+      els.resultIcon.textContent = '🌀';
+      els.resultKicker.textContent = 'NOT QUITE';
+      els.resultKicker.style.color = '#fcd34d';
+      els.resultTitle.textContent = 'ลำดับยังไม่ถูก';
+      const wrong = S.slots.filter(s => !s.filled || s.filled.flowIndex !== s.index).map(s => s.index + 1);
+      els.resultText.textContent = 'ช่องที่ยังไม่ถูก: ' + wrong.join(', ') + ' — ลองอ่านโจทย์และเส้น ใช่/ไม่ อีกครั้ง';
+      const retriesLeft = Math.max(0, MAX_WRONGS - (S.wrongs || 0));
+      els.scoreDelta.textContent = 'เหลือโอกาสใส่ใหม่ ' + retriesLeft + ' ครั้ง';
+      els.scoreDelta.className = 'mx-auto my-5 w-fit rounded-full bg-amber-400/15 px-5 py-2 text-lg font-black text-amber-300';
+      els.resultPrimary.textContent = 'ลองอีกครั้ง (เหลือ ' + retriesLeft + ')';
+      els.resultSecondary.textContent = 'กลับไปเลือกโจทย์';
+      els.resultPrimary.onclick = () => { closeModal(); retryWithoutReset(); };
+      els.resultSecondary.onclick = () => {
+        closeModal();
+        showHome();
+      };
+    }
+  }
+
+  function showClear() {
+    els.finalScore.textContent = S.score;
+    els.clearScreen.querySelector('p.mb-1') && (els.clearScreen.querySelector('p.mb-1').textContent = 'ALL ' + LEVELS.length + ' LEVELS COMPLETE');
+    els.finalBreakdown.innerHTML = LEVELS.map((l, i) => {
+      const sc = S.best[i];
+      return '<div class="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-1.5">' +
+        '<span>' + l.icon + '</span>' +
+        '<span class="flex-1 truncate">' + l.title + '</span>' +
+        '<span class="' + (sc ? 'text-emerald-300' : 'text-slate-500') + '">' + (sc ? '+' + sc : '—') + '</span>' +
+        '</div>';
+    }).join('');
+    els.clearScreen.classList.remove('hidden');
+  }
+
+  els.restartBtn.addEventListener('click', () => {
+    S.score = 0;
+    S.best = new Array(LEVELS.length).fill(null);
+    els.scoreText.textContent = '0';
+    closeModal();
+    buildLevel(0);
+  });
+
+  let lastTime = performance.now();
+  function frame(now) {
+    const dt = Math.min(.05, (now - lastTime) / 1000);
+    lastTime = now;
+    const t = now / 1000;
+
+    ctx.clearRect(0, 0, S.w, S.h);
+    ctx.save();
+
+    if ((arActive || !els.calibration.classList.contains('hidden')) && now-lastARResultAt>HAND_VISIBLE_MS && now-lastWatchdogAt>80) {
+      lastWatchdogAt=now;
+      onResults({multiHandLandmarks:[]},now,true);
+    }
+    arActors.forEach(actor => {
+      actor.visible = actor.id===handTracker.primaryID && now-actor.lastSeen<=HAND_VISIBLE_MS;
+      if (!actor.visible) return;
+      const blend=1-Math.exp(-40*dt);
+      actor.pointer.x += (actor.pointer.tx-actor.pointer.x)*blend;
+      actor.pointer.y += (actor.pointer.ty-actor.pointer.y)*blend;
+      if (!actor.grabbed) {
+        actor.hover=hitCard(actor.pointer.x,actor.pointer.y);
+        actor.cursorState=actor.hover ? 'hover' : 'normal';
+      }
+    });
+
+    if (S.cards.length) {
+      drawEdges();
+      S.slots.forEach(drawSlot);
+      S.cards.forEach(c => {
+        if (cardHolder(c)) return;
+        if (c.locked) { drawCard(c,t); return; }
+        const wobble = Math.sin(t*2.1+c.phase)*.09;
+        c.x += c.vx+wobble;
+        c.y += c.vy+wobble*.5;
+        if (c.x<70) { c.x=70; c.vx*=-1; }
+        if (c.x>S.w*.44) { c.x=S.w*.44; c.vx*=-1; }
+        if (c.y<70) { c.y=70; c.vy*=-1; }
+        if (c.y>S.h-60) { c.y=S.h-60; c.vy*=-1; }
+        c.glow *= .92;
+        drawCard(c, t);
+      });
+      [S,...arActors.values()].forEach(actor => {
+        if (!actor.grabbed) return;
+        const c = actor.grabbed.card, p=actor.pointer;
+        c.x = (actor===S ? p.tx : p.x)+actor.grabbed.ox;
+        c.y = (actor===S ? p.ty : p.y)+actor.grabbed.oy;
+        c.x = Math.max(58, Math.min(S.w-58,c.x));
+        c.y = Math.max(48, Math.min(S.h-48,c.y));
+        drawCard(c,t);
+      });
+      drawParticles(dt);
+    }
+
+    if (S.running) {
+      if (S.mode==='ar') {
+        arActors.forEach(actor => {
+          if (!actor.visible) return;
+          drawSkeleton(actor.landmarks,actor.color);
+          drawCursor(t,actor);
+        });
+      } else {
+        S.pointer.x += (S.pointer.tx-S.pointer.x)*.4;
+        S.pointer.y += (S.pointer.ty-S.pointer.y)*.4;
+        drawCursor(t);
+      }
+    }
+    ctx.restore();
+    requestAnimationFrame(frame);
+  }
+
+  /* ---- AR / MediaPipe ---- */
+  let hands = null, camera = null, arActive = false, arGeneration = 0;
+  let lastARResultAt = 0, lastWatchdogAt = 0;
+  const HAND_VISIBLE_MS=250;
+  const handTracker = window.ARTracking ? new window.ARTracking.HandTracker({visibleGrace:HAND_VISIBLE_MS}) : null;
+  const arActors = new Map();
+  const CALIB_MS = 5000;
+  let calibHandSince = null, calibOwnerID = null;
+  let calibEntered = false;
+
+  // Apply exactly the same object-fit:cover crop and mirror as the displayed video.
+  function cameraPoint(point) {
+    const vw=els.cam.videoWidth || 960, vh=els.cam.videoHeight || 540;
+    const scale=Math.max(S.w/vw,S.h/vh), width=vw*scale, height=vh*scale;
+    const x=point.x*width+(S.w-width)/2;
+    return {x:AR_MIRROR ? S.w-x : x,y:point.y*height+(S.h-height)/2};
+  }
+
+  function cancelARGrab(actor) {
+    if (actor.grabbed) {
+      const {card,origin}=actor.grabbed;
+      card.x=origin.x; card.y=origin.y; card._drawY=null;
+      actor.grabbed=null;
+    }
+    actor.cursorState='normal'; actor.hover=null;
+  }
+
+  function resetARInteraction() {
+    arActors.forEach(cancelARGrab);
+    if (handTracker) handTracker.disarm();
+  }
+
+  function stopAR() {
+    arGeneration++;
+    arActive=false;
+    document.body.classList.remove('ar-on');
+    cancelARGrab(S);
+    resetARInteraction();
+    if (camera) { camera.stop(); camera=null; }
+    const previous=hands; hands=null;
+    if (previous) {
+      try { Promise.resolve(previous.close()).catch(() => {}); } catch (_) {}
+    }
+    if (els.cam.srcObject) {
+      els.cam.srcObject.getTracks().forEach(track => track.stop());
+      els.cam.srcObject=null;
+    }
+    if (handTracker) handTracker.reset();
+    arActors.clear(); S.arHands=[]; S.arPrimaryID=null;
+    calibHandSince=null; calibOwnerID=null; calibEntered=false;
+  }
+
+  function onResults(results, now=performance.now(), watchdog=false) {
+    const calibrating = !els.calibration.classList.contains('hidden');
+    if (!handTracker || (!arActive && !calibrating)) return;
+    if (!watchdog) lastARResultAt=now;
+    const state=handTracker.update(results,now,(els.cam.videoWidth || 960)/(els.cam.videoHeight || 540));
+    state.tracks.forEach((track,i) => {
+      const point=cameraPoint(track.pointer);
+      let actor=arActors.get(track.id);
+      if (!actor) {
+        actor={id:track.id,pointer:{x:point.x,y:point.y,tx:point.x,ty:point.y},grabbed:null,cursorState:'normal',color:i===0 ? '#67e8f9' : '#a5b4fc'};
+        arActors.set(track.id,actor);
+      }
+      actor.lastSeen=track.lastSeen; actor.landmarks=track.landmarks;
+      actor.pointer.tx=Math.max(0,Math.min(S.w,point.x));
+      actor.pointer.ty=Math.max(0,Math.min(S.h,point.y));
+    });
+    // Stale enrollment candidates have no controllers once replaced during setup.
+    arActors.forEach((actor,id) => {
+      if (!state.tracks.some(t => t.id===id)) { cancelARGrab(actor); arActors.delete(id); }
+    });
+    S.arHands=Array.from(arActors.values());
+    S.arPrimaryID=state.primaryID;
+    if (calibrating) {
+      const fresh=state.tracks.filter(t => now-t.lastSeen<=HAND_VISIBLE_MS);
+      if (!handTracker.canLock(now)) {
+        calibHandSince=null; calibOwnerID=null;
+        els.calibCount.textContent='✋';
+        els.calibWarn.classList.toggle('hidden',fresh.length===2);
+        els.calibWarn.textContent='ให้กล้องเห็นเฉพาะมือทั้งสองของผู้เล่น แล้วค้างไว้สักครู่';
+        els.calibStatus.textContent='พบมือ '+fresh.length+'/2 — ยกมือทั้งสองให้เห็นชัด';
+        return;
+      }
+      els.calibWarn.classList.add('hidden');
+      const owner=calibOwnerID ? fresh.find(t => t.id===calibOwnerID && t.pinched) : fresh.find(t => t.pinched);
+      if (!owner) {
+        calibHandSince=null; calibOwnerID=null;
+        els.calibCount.textContent='👌';
+        els.calibStatus.textContent='พบมือครบแล้ว — บีบนิ้วมือใดมือหนึ่งค้างไว้ 5 วินาที';
+        return;
+      }
+      if (calibHandSince==null) { calibHandSince=now; calibOwnerID=owner.id; }
+      const elapsed = now-calibHandSince;
+      const remain = Math.max(0, Math.ceil((CALIB_MS - elapsed) / 1000));
+      els.calibCount.textContent = remain;
+      els.calibStatus.textContent = 'ดีมาก! บีบค้างไว้อีก ' + remain + ' วิ';
+      if (elapsed >= CALIB_MS) {
+        els.calibStart.disabled = false;
+        if (!calibEntered) {
+          calibEntered = true;
+          enableAR();
+        }
+      }
+      return;
+    }
+    const primary=state.tracks.find(t => t.id===state.primaryID);
+    els.gameModePill.textContent=primary && now-primary.lastSeen<=HAND_VISIBLE_MS ? 'AR · มือหลัก' : 'AR · กำลังจับมือ';
+    if (!canPlay()) { resetARInteraction(); return; }
+    state.events.forEach(event => {
+      const actor=arActors.get(event.id);
+      if (!actor) return;
+      if (event.type==='cancel') cancelARGrab(actor); // Tracking loss must never place a card.
+      else if (event.id===state.primaryID && event.type==='pinchstart') tryGrab(actor.pointer.x,actor.pointer.y,actor);
+      else if (event.id===state.primaryID && event.type==='pinchend') tryRelease(actor);
+    });
+  }
+
+  function prepareCalibration() {
+    resetARInteraction();
+    handTracker.reset(); arActors.clear(); S.arHands=[]; S.arPrimaryID=null;
+    arActive=false; calibHandSince=null; calibOwnerID=null; calibEntered=false;
+    lastARResultAt=performance.now();
+    els.calibCount.textContent='✋';
+    els.calibStart.disabled=true;
+    els.calibStart.textContent='กำลังลงทะเบียนมือทั้งสอง…';
+    els.calibWarn.classList.add('hidden');
+    els.calibration.classList.remove('hidden');
+    els.intro.classList.add('hidden');
+  }
+
+  // One inference at a time, at most 30 Hz. Rendering remains independent at display FPS.
+  function startFramePump(detector, generation) {
+    let stopped=false, frameID=null, videoCallback=false, lastSent=-Infinity, failures=0;
+    const schedule=() => {
+      if (stopped || generation!==arGeneration) return;
+      videoCallback=typeof els.cam.requestVideoFrameCallback==='function';
+      frameID=videoCallback ? els.cam.requestVideoFrameCallback(tick) : requestAnimationFrame(tick);
+    };
+    const tick=async now => {
+      if (stopped || generation!==arGeneration) return;
+      if (els.cam.readyState>=2 && now-lastSent>=1000/30) {
+        lastSent=now;
+        try { await detector.send({image:els.cam}); failures=0; }
+        catch (_) {
+          if (stopped || generation!==arGeneration) return;
+          if (++failures>=3) { enableMouse(); toast('ระบบตรวจมือสะดุด เปลี่ยนเป็นเมาส์ให้แล้ว','warn'); return; }
+        }
+      }
+      schedule();
+    };
+    schedule();
+    return {stop() {
+      stopped=true;
+      if (frameID!=null) {
+        if (videoCallback) els.cam.cancelVideoFrameCallback(frameID);
+        else cancelAnimationFrame(frameID);
+      }
+    }};
+  }
+
+  async function startAR() {
+    stopAR();
+    const generation=arGeneration;
+    try {
+      if (!handTracker || typeof Hands==='undefined' || !navigator.mediaDevices) throw new Error('ar-unavailable');
+      prepareCalibration();
+      els.calibStatus.textContent='กำลังเปิดกล้อง…';
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:'user',width:{ideal:960},height:{ideal:540},frameRate:{ideal:30,max:30}},audio:false
+      });
+      if (generation!==arGeneration) { stream.getTracks().forEach(t => t.stop()); return; }
+      els.cam.srcObject = stream;
+      await els.cam.play();
+      if (generation!==arGeneration) return;
+      hands = new Hands({
+        locateFile: file => 'https://cdn.jsdelivr.net/npm/@mediapipe/hands/' + file
+      });
+      // Detect spare hands so they can be ignored while one primary hand controls cards.
+      hands.setOptions({maxNumHands:4,modelComplexity:1,minDetectionConfidence:.65,minTrackingConfidence:.7});
+      hands.onResults(results => {
+        if (generation===arGeneration) onResults(results);
+      });
+      camera=startFramePump(hands,generation);
+      document.body.classList.add('ar-on');
+      els.calibStatus.textContent='กล้องพร้อม — ยกมือทั้งสองของผู้เล่น';
+    } catch (err) {
+      if (generation!==arGeneration) return;
+      stopAR();
+      els.calibration.classList.remove('hidden');
+      els.intro.classList.add('hidden');
+      els.calibStatus.textContent = 'กล้องไม่พร้อม — ใช้โหมดเมาส์แทนได้เลย';
+      els.calibWarn.classList.remove('hidden');
+      els.skipAR.classList.add('btn-primary');
+    }
+  }
+
+  function enableAR() {
+    if (!calibEntered || !handTracker || !handTracker.lock(performance.now(),calibOwnerID)) return;
+    arActors.forEach((actor,id) => {
+      if (id!==handTracker.primaryID) { cancelARGrab(actor); arActors.delete(id); }
+    });
+    S.arHands=Array.from(arActors.values()); S.arPrimaryID=handTracker.primaryID;
+    S.mode = 'ar';
+    arActive = true;
+    document.body.classList.add('ar-on');
+    els.modeText.textContent = 'AR · ล็อกมือหลัก';
+    els.modeDot.className = 'h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_#34d399]';
+    els.controlHint.textContent = 'Control: มือซ้าย/ขวา · โฟกัสมือหลัก · มือหลุดแล้วจับใหม่อัตโนมัติ';
+    els.calibration.classList.add('hidden');
+    S.running = true;
+    enterGameplay('ar');
+  }
+
+  function enableMouse() {
+    stopAR();
+    S.mode = 'mouse';
+    document.body.classList.remove('ar-on');
+    els.modeText.textContent = 'Mouse Fallback';
+    els.modeDot.className = 'h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_10px_#22d3ee]';
+    els.controlHint.textContent = 'Control: mouse / touch drag';
+    els.calibration.classList.add('hidden');
+    els.intro.classList.add('hidden');
+    S.running = true;
+    enterGameplay('mouse');
+  }
+
+  document.getElementById('startMouse').addEventListener('click', enableMouse);
+  document.getElementById('startAR').addEventListener('click', startAR);
+  els.skipAR.addEventListener('click', enableMouse);
+  els.calibStart.addEventListener('click', enableAR);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) resetARInteraction();
+  });
+
+  /* ---- boot ---- */
+  window.addEventListener('resize', resize);
+  resize();
+  buildLevel(0);
+  requestAnimationFrame(frame);
+  showHome();
+
+  })();
+  </script>
+</body>
+</html>
