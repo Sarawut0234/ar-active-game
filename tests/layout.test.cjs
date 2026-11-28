@@ -36,10 +36,9 @@ for (const width of [320,390,506,768,1000,1024,1440,1920]) {
     for (let level=0; level<7; level++) {
       const {S} = fixture(width,level);
       const {board} = S.layout;
-      assert.equal(S.slots[0].x,S.slots[1].x);
-      assert.equal(S.slots[1].x,S.slots[3].x);
-      assert.equal(S.slots[3].x,S.slots[5].x);
-      assert.ok(S.slots[2].x>S.slots[1].x, 'condition is on the right');
+      assert.equal(S.slots.length,7);
+      assert.ok(S.slots.every(slot => slot.x === S.slots[0].x), 'all steps share one column');
+      assert.ok(S.slots[6].y > S.slots[5].y, 'messages flow from start to end');
       for (const slot of S.slots) {
         assert.ok(slot.x-slot.w/2>=board.x && slot.x+slot.w/2<=board.x+board.w);
         assert.ok(slot.y-slot.h/2>=board.y-0.001);
@@ -62,8 +61,8 @@ for (const width of [320,390,506,768,1000,1024,1440,1920]) {
           }
         }
       }
-      assert.deepEqual(Array.from(S.routes.filter(r=>r.from===2),r=>r.to),[3,4]);
-      assert.ok(!S.routes.some(r=>r.from===3 && r.to===4), 'Yes and No are alternatives, not sequential');
+      assert.deepEqual(Array.from(S.routes.filter(r=>r.from===3),r=>r.to),[4,5]);
+      assert.ok(!S.routes.some(r=>r.from===3 && r.to===6), 'the condition does not jump straight to the end');
     }
   });
 }

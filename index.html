@@ -300,6 +300,7 @@
     .home-card .hc-title { font-size: 16px; font-weight: 900; color: #fff; }
     .home-card .hc-desc {
       font-size: 11.5px; line-height: 1.45; color: #94a3b8;
+      white-space: pre-line;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
     .home-card .hc-go {
@@ -343,6 +344,7 @@
     .prompt-desc {
       margin: 6px auto 0; max-width: 820px;
       font-size: clamp(11px, 1.4vw, 14px); line-height: 1.5; font-weight: 600;
+      white-space: pre-line;
       color: #cbd5e1; text-shadow: 0 2px 10px rgba(2,6,23,.95);
     }
     #gameBar {
@@ -509,7 +511,7 @@
     <footer class="glass flex shrink-0 flex-wrap items-center justify-center gap-x-5 gap-y-1 rounded-2xl px-4 py-2 text-[10.5px] font-semibold text-slate-400 sm:text-[11px]">
       <span><b class="text-cyan-300">1</b> หยิบการ์ดจากถาดซ้าย</span>
       <span><b class="text-cyan-300">2</b> วางลงช่องขวาตามลำดับ</span>
-      <span><b class="text-cyan-300">3</b> สังเกตเงื่อนไข ใช่ / ไม่</span>
+      <span><b class="text-cyan-300">3</b> สังเกตเงื่อนไขบนเส้นทาง</span>
       <span><b class="text-cyan-300">4</b> กด Verify Result</span>
       <span id="controlHint" class="text-indigo-300">Control: mouse / touch drag</span>
     </footer>
@@ -632,122 +634,101 @@
   const LEVELS = [
     {
       icon:'🍳', title:'ทำอาหารตามสั่ง',
-      desc:'จัดข้าวกะเพราให้ตรงใบสั่ง เมื่อข้าว กะเพรา และไข่ดาวเตรียมไว้แล้ว โดยตัดสินใจจากคำถาม "ขอไข่ดาวไหม?" ส่วนสีเสื้อลูกค้าไม่มีผลต่อขั้นตอน',
+      desc:'จัดข้าวกะเพราให้ตรงใบสั่ง เมื่อข้าว กะเพรา และไข่ดาวเตรียมไว้แล้ว โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีเสื้อลูกค้า ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  ลูกค้าขอไข่ดาว     |     กรณี B  ลูกค้าไม่ขอไข่ดาว',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'ปรุงข้าวกะเพรา', text:'Cook basil rice'},
-        {type:'decision', label:'ขอไข่ดาวไหม?', text:'Fried egg?'},
-        {type:'process', label:'เพิ่มไข่ดาว (ใช่)', text:'Add fried egg'},
-        {type:'process', label:'ข้ามไข่ดาว (ไม่)', text:'Skip egg'},
-        {type:'terminator', label:'เสิร์ฟอาหาร', text:'Serve food'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านใบสั่ง'},
+        {type:'process', label:'ตักข้าวกะเพรา'},
+        {type:'decision', label:'ขอไข่ดาวไหม?'},
+        {type:'process', label:'เพิ่มไข่ดาว'},
+        {type:'process', label:'เสิร์ฟอาหาร'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'🪴', title:'ปลูกผักในกระถาง',
-      desc:'ดูแลต้นผักที่เพิ่งปลูก ตามกติกาแปลงผักให้รดน้ำเมื่อดินแห้ง แล้วบันทึกการดูแลทุกครั้ง โดยตัดสินใจจากคำถาม "ดินแห้งไหม?" ส่วนสีกระถางไม่มีผลต่อขั้นตอน',
+      desc:'ดูแลต้นผักที่เพิ่งปลูก ตามกติกาแปลงผักให้รดน้ำเมื่อดินแห้ง แล้วบันทึกการดูแลทุกครั้ง โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีกระถาง ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  ตรวจแล้วดินแห้ง     |     กรณี B  ตรวจแล้วดินยังชื้น',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'ตรวจดินในกระถาง', text:'Check soil'},
-        {type:'decision', label:'ดินแห้งไหม?', text:'Soil dry?'},
-        {type:'process', label:'รดน้ำ (ใช่)', text:'Water plant'},
-        {type:'process', label:'ข้ามการรดน้ำ (ไม่)', text:'Skip watering'},
-        {type:'terminator', label:'บันทึกการดูแล', text:'Log care'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านป้ายแปลง'},
+        {type:'process', label:'ตรวจดิน'},
+        {type:'decision', label:'ดินแห้งไหม?'},
+        {type:'process', label:'รดน้ำ'},
+        {type:'process', label:'บันทึกการดูแล'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'🧽', title:'ทำความสะอาดห้อง',
-      desc:'รับเวรดูแลโต๊ะที่ผ่านการปัดฝุ่นแล้ว ถ้ายังมีคราบให้เช็ดก่อนจัดของเข้าที่ โดยตัดสินใจจากคำถาม "พบคราบไหม?" ส่วนสีเสื้อคนทำเวรไม่มีผลต่อขั้นตอน',
+      desc:'รับเวรดูแลโต๊ะที่ผ่านการปัดฝุ่นแล้ว ถ้ายังมีคราบให้เช็ดก่อนจัดของเข้าที่ โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีเสื้อคนทำเวร ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  โต๊ะมีคราบน้ำหวาน     |     กรณี B  โต๊ะสะอาดไม่มีคราบ',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'ตรวจสภาพโต๊ะ', text:'Check table'},
-        {type:'decision', label:'พบคราบไหม?', text:'Stain found?'},
-        {type:'process', label:'เช็ดคราบ (ใช่)', text:'Wipe stain'},
-        {type:'process', label:'ข้ามการเช็ด (ไม่)', text:'Skip wiping'},
-        {type:'terminator', label:'จัดของเข้าที่', text:'Tidy up'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านงานเวร'},
+        {type:'process', label:'ตรวจหน้าโต๊ะ'},
+        {type:'decision', label:'พบคราบไหม?'},
+        {type:'process', label:'เช็ดคราบ'},
+        {type:'process', label:'จัดของเข้าที่'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'🎒', title:'จัดกระเป๋าไปโรงเรียน',
-      desc:'จัดหนังสือตามตาราง และนำชุดพละไปเฉพาะวันที่มีเรียนพละ โดยตัดสินใจจากคำถาม "มีวิชาพละไหม?" ส่วนลายกระเป๋าไม่มีผลต่อขั้นตอน',
+      desc:'จัดหนังสือตามตาราง และนำชุดพละไปเฉพาะวันที่มีเรียนพละ โดยมีข้อมูลประกอบอีกหนึ่งรายการคือลายกระเป๋า ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  พรุ่งนี้มีวิชาพละ     |     กรณี B  พรุ่งนี้ไม่มีวิชาพละ',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'จัดหนังสือตามตาราง', text:'Pack books'},
-        {type:'decision', label:'มีวิชาพละไหม?', text:'PE day?'},
-        {type:'process', label:'ใส่ชุดพละ (ใช่)', text:'Pack sportswear'},
-        {type:'process', label:'ข้ามชุดพละ (ไม่)', text:'Skip sportswear'},
-        {type:'terminator', label:'ปิดกระเป๋า', text:'Close bag'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านตารางเรียน'},
+        {type:'process', label:'ใส่หนังสือ'},
+        {type:'decision', label:'มีวิชาพละไหม?'},
+        {type:'process', label:'ใส่ชุดพละ'},
+        {type:'process', label:'ปิดกระเป๋า'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'📖', title:'ยืมหนังสือห้องสมุด',
-      desc:'ที่จุดยืมด้วยตนเอง หากเครื่องแจ้งว่ายังไม่ได้สแกนเล่มนี้ ให้สแกนก่อนยืนยันการยืม โดยตัดสินใจจากคำถาม "ยังไม่ได้สแกนไหม?" ส่วนสีที่คั่นหนังสือไม่มีผลต่อขั้นตอน',
+      desc:'ที่จุดยืมด้วยตนเอง หากเครื่องแจ้งว่ายังไม่ได้สแกนเล่มนี้ ให้สแกนก่อนยืนยันการยืม โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีที่คั่นหนังสือ ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  จอแจ้งว่ายังไม่ได้สแกน     |     กรณี B  จอแจ้งว่าสแกนแล้ว',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'เลือกหนังสือที่จะยืม', text:'Pick book'},
-        {type:'decision', label:'ยังไม่ได้สแกนไหม?', text:'Not scanned?'},
-        {type:'process', label:'สแกนหนังสือ (ใช่)', text:'Scan book'},
-        {type:'process', label:'ข้ามการสแกน (ไม่)', text:'Skip scanning'},
-        {type:'terminator', label:'ยืนยันการยืม', text:'Confirm borrow'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านสถานะบนจอ'},
+        {type:'process', label:'ตรวจชื่อหนังสือ'},
+        {type:'decision', label:'ยังไม่ได้สแกนไหม?'},
+        {type:'process', label:'สแกนหนังสือ'},
+        {type:'process', label:'ยืนยันการยืม'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'☔', title:'เตรียมตัวไปโรงเรียนวันฝนตก',
-      desc:'เตรียมของออกจากบ้าน ตามข้อตกลงของโจทย์ ถ้าพยากรณ์ว่าฝนจะตกให้พกร่ม โดยตัดสินใจจากคำถาม "คาดว่าฝนจะตกไหม?" ส่วนสีรองเท้าไม่มีผลต่อขั้นตอน',
+      desc:'เตรียมของออกจากบ้าน ตามข้อตกลงของโจทย์ ถ้าพยากรณ์ว่าฝนจะตกให้พกร่ม โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีรองเท้า ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  พยากรณ์ว่าฝนจะตก     |     กรณี B  พยากรณ์ว่าฝนจะไม่ตก',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'เช็กพยากรณ์อากาศ', text:'Check forecast'},
-        {type:'decision', label:'คาดว่าฝนจะตกไหม?', text:'Rain expected?'},
-        {type:'process', label:'หยิบร่ม (ใช่)', text:'Take umbrella'},
-        {type:'process', label:'ไม่ต้องพกร่ม (ไม่)', text:'Leave umbrella'},
-        {type:'terminator', label:'ออกจากบ้าน', text:'Leave home'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านพยากรณ์'},
+        {type:'process', label:'เตรียมกระเป๋า'},
+        {type:'decision', label:'คาดว่าฝนจะตกไหม?'},
+        {type:'process', label:'หยิบร่ม'},
+        {type:'process', label:'ออกจากบ้าน'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     },
     {
       icon:'🌐', title:'ส่งการบ้านออนไลน์',
-      desc:'เตรียมส่งงานในระบบที่ต้องมีไฟล์แนบ หากยังไม่มีไฟล์ ให้แนบก่อนกดส่ง โดยตัดสินใจจากคำถาม "ยังขาดไฟล์ไหม?" ส่วนสีพื้นหลังหน้าจอไม่มีผลต่อขั้นตอน',
+      desc:'เตรียมส่งงานในระบบที่ต้องมีไฟล์แนบ หากยังไม่มีไฟล์ ให้แนบก่อนกดส่ง โดยมีข้อมูลประกอบอีกหนึ่งรายการคือสีพื้นหลังหน้าจอ ให้วาดผังงานเดียวที่ใช้ได้ทั้งสองกรณี พร้อมระบุข้อมูลที่มีผลต่อการตัดสินใจ\nกรณี A  รายการไฟล์แนบว่าง     |     กรณี B  มีไฟล์งานที่ถูกต้องแล้ว',
       flow:[
-        {type:'terminator', label:'เริ่ม', text:'Start'},
-        {type:'process', label:'เปิดหน้าส่งงาน', text:'Open submit page'},
-        {type:'decision', label:'ยังขาดไฟล์ไหม?', text:'File missing?'},
-        {type:'process', label:'แนบไฟล์งาน (ใช่)', text:'Attach file'},
-        {type:'process', label:'ข้ามการแนบไฟล์ (ไม่)', text:'Skip attaching'},
-        {type:'terminator', label:'กดส่งงาน', text:'Submit work'}
+        {type:'terminator', label:'เริ่มต้น'},
+        {type:'process', label:'อ่านโจทย์งาน'},
+        {type:'process', label:'ตรวจรายการไฟล์'},
+        {type:'decision', label:'ยังขาดไฟล์ไหม?'},
+        {type:'process', label:'แนบไฟล์งาน'},
+        {type:'process', label:'กดส่งงาน'},
+        {type:'terminator', label:'สิ้นสุด'}
       ],
-      answers:[
-        {yes:3, no:4},
-        {yes:null, no:null},
-        {yes:null, no:null}
-      ]
+      answers:[{yes:4, no:5}]
     }
   ];
 
@@ -870,9 +851,12 @@
     }
 
     const trayX = S.w * 0.06;
-    const areaTop = 92;
+    const stageRect = els.stage.getBoundingClientRect();
+    const promptRect = els.promptBar.getBoundingClientRect();
+    const areaTop = Math.max(92, Math.ceil(promptRect.bottom - stageRect.top) + 24);
     const areaBot = S.h - 46;
-    const perCol = Math.max(2, Math.min(3, Math.floor((areaBot - areaTop) / 92)));
+    // Seven cards need four rows in two columns so the tray never runs under the prompt.
+    const perCol = Math.max(2, Math.min(4, Math.ceil(order.length / 2), Math.floor((areaBot - areaTop) / 92)));
     order.forEach((fi, i) => {
       const col = Math.floor(i / perCol);
       const row = i % perCol;
@@ -931,17 +915,17 @@
     const availableH = Math.max(210,S.h-top-118);
     const boardH = Math.min(540,availableH);
     const board = {x:S.w*.52,y:top+(availableH-boardH)/2,w:S.w*.46,h:boardH};
+    const rows = Math.max(1,S.slots.length);
     const slotW = Math.min(SLOT_W,(board.w-60)/2);
-    const slotH = Math.min(SLOT_H,(board.h-72)/4);
+    const slotH = Math.min(SLOT_H,(board.h-72)/rows);
     const diagramW = Math.min(460,board.w);
     const diagramX = board.x+(board.w-diagramW)/2;
-    const mainX = diagramX+8+slotW/2;
-    const sideX = diagramX+diagramW-32-slotW/2;
+    const mainX = diagramX+diagramW/2;
     const firstY = board.y+slotH/2;
-    const pitch = (board.h-slotH)/3;
-    // Start → Process → [condition on the right] → Yes / No → End.
-    const positions = [[mainX,0], [mainX,1], [sideX,1], [mainX,2], [sideX,2], [mainX,3]];
-    S.layout = {board, slotW, slotH, mainX, sideX, pitch};
+    const pitch = rows > 1 ? (board.h-slotH)/(rows-1) : 0;
+    // One straight column: Start → Read → Process → Condition → Yes action → Merge action → End.
+    const positions = Array.from({length:rows}, (_, row) => [mainX, row]);
+    S.layout = {board, slotW, slotH, mainX, pitch};
     S.slots.forEach((slot, i) => {
       slot.x = positions[i][0]; slot.y = firstY + positions[i][1] * pitch;
       slot.w = slotW; slot.h = slotH;
@@ -963,22 +947,22 @@
     const decisionIdx = lvl.flow.findIndex(f => f.type === 'decision');
     const branches = lvl.answers.find(a => a.yes != null && a.no != null);
     const d = slots[decisionIdx], yes = slots[branches.yes], no = slots[branches.no];
+    const finalIdx = slots.length - 2;
+    const final = slots[finalIdx];
     const end = slots[slots.length - 1];
     const bottom = s => [s.x, s.y + s.h / 2 + 2];
     const top = s => [s.x, s.y - s.h / 2 - 5];
-    const left = s => [s.x - s.w / 2 - 5, s.y];
     const right = s => [s.x + s.w / 2 + 2, s.y];
-    const splitY = (d.y + d.h / 2 + yes.y - yes.h / 2) / 2;
-    const mergeY = (yes.y + yes.h / 2 + end.y - end.h / 2) / 2;
-    const railX = no.x + no.w / 2 + 24;
+    const railX = Math.min(S.layout.board.x + S.layout.board.w - 8, d.x + d.w / 2 + 24);
+    const yesLabelY = (d.y + yes.y) / 2;
     return [
       { from:0, to:1, points:[bottom(slots[0]), top(slots[1])], color:COL.indigoSoft },
-      { from:1, to:decisionIdx, points:[right(slots[1]), left(d)], color:COL.indigoSoft },
-      { from:decisionIdx, to:branches.yes, points:[bottom(d), [d.x,splitY], [yes.x,splitY], top(yes)], color:'#34d399', label:'ใช่', badge:[(d.x+yes.x)/2,splitY] },
-      { from:decisionIdx, to:branches.no, points:[right(d), [railX,d.y], [railX,no.y], [no.x+no.w/2+5,no.y]], color:'#fb7185', label:'ไม่', badge:[railX,(d.y+no.y)/2] },
-      { from:branches.yes, to:5, points:[bottom(yes), [yes.x,mergeY]], color:'#34d399', arrow:false },
-      { from:branches.no, to:5, points:[bottom(no), [no.x,mergeY], [end.x,mergeY]], color:'#fb7185', arrow:false },
-      { from:null, to:5, points:[[end.x,mergeY], top(end)], color:COL.indigoSoft }
+      { from:1, to:2, points:[bottom(slots[1]), top(slots[2])], color:COL.indigoSoft },
+      { from:2, to:decisionIdx, points:[bottom(slots[2]), top(d)], color:COL.indigoSoft },
+      { from:decisionIdx, to:branches.yes, points:[bottom(d), top(yes)], color:'#34d399', label:'ใช่', badge:[d.x + d.w / 2 + 28, yesLabelY] },
+      { from:decisionIdx, to:branches.no, points:[right(d), [railX,d.y], [railX,final.y], [final.x + final.w / 2 + 5, final.y]], color:'#fb7185', label:'ไม่ใช่', badge:[railX,(d.y+final.y)/2] },
+      { from:branches.yes, to:finalIdx, points:[bottom(yes), top(final)], color:'#34d399' },
+      { from:finalIdx, to:slots.length - 1, points:[bottom(final), top(end)], color:COL.indigoSoft }
     ];
   }
 
@@ -997,7 +981,7 @@
         '<span class="shape-chip chip-' + f.type + '"></span>' +
         '<span class="font-bold text-slate-200">' + f.label + '</span>' +
         '<span class="ml-auto text-[10px] font-black ' + (f.type === 'decision' ? 'text-amber-300' : 'text-slate-500') + '">' +
-          (f.type === 'decision' ? 'ใช่/ไม่' : f.type === 'terminator' ? 'S/E' : 'DO') + '</span>';
+          (f.type === 'decision' ? 'ถาม' : f.type === 'terminator' ? 'S/E' : 'DO') + '</span>';
       els.guideList.appendChild(row);
     });
   }
@@ -1610,7 +1594,7 @@
       els.resultKicker.style.color = '#fcd34d';
       els.resultTitle.textContent = 'ลำดับยังไม่ถูก';
       const wrong = S.slots.filter(s => !s.filled || s.filled.flowIndex !== s.index).map(s => s.index + 1);
-      els.resultText.textContent = 'ช่องที่ยังไม่ถูก: ' + wrong.join(', ') + ' — ลองอ่านโจทย์และเส้น ใช่/ไม่ อีกครั้ง';
+      els.resultText.textContent = 'ช่องที่ยังไม่ถูก: ' + wrong.join(', ') + ' — ลองอ่านโจทย์และเส้นทางตามเงื่อนไขอีกครั้ง';
       const retriesLeft = Math.max(0, MAX_WRONGS - (S.wrongs || 0));
       els.scoreDelta.textContent = 'เหลือโอกาสใส่ใหม่ ' + retriesLeft + ' ครั้ง';
       els.scoreDelta.className = 'mx-auto my-5 w-fit rounded-full bg-amber-400/15 px-5 py-2 text-lg font-black text-amber-300';
