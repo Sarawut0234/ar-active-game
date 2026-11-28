@@ -623,7 +623,7 @@
 
   const COLORS = { terminator:'#34d399', process:'#60a5fa', decision:'#fbbf24' };
   const SHAPE = { terminator:'terminator', process:'process', decision:'decision' };
-  const SLOT_W = 128, SLOT_H = 76;
+  const SLOT_W = 150, SLOT_H = 76;
   const COL = { indigo:'#818cf8', indigoSoft:'rgba(129,140,248,.85)', indigoFaint:'rgba(129,140,248,.34)' };
 
   // selfie camera is CSS-mirrored (scaleX(-1)); keep tracked X in the same
@@ -959,12 +959,13 @@
     const right = s => [s.x + s.w / 2 + 2, s.y];
     const railX = Math.min(S.layout.board.x + S.layout.board.w - 8, d.x + d.w / 2 + 24);
     const yesLabelY = (d.y + yes.y) / 2;
+    const noLabelY = (yes.y + final.y) / 2;
     return [
       { from:0, to:1, points:[bottom(slots[0]), top(slots[1])], color:COL.indigoSoft },
       { from:1, to:2, points:[bottom(slots[1]), top(slots[2])], color:COL.indigoSoft },
       { from:2, to:decisionIdx, points:[bottom(slots[2]), top(d)], color:COL.indigoSoft },
-      { from:decisionIdx, to:branches.yes, points:[bottom(d), top(yes)], color:'#34d399', label:'ใช่', badge:[d.x + d.w / 2 + 28, yesLabelY] },
-      { from:decisionIdx, to:branches.no, points:[right(d), [railX,d.y], [railX,final.y], [final.x + final.w / 2 + 5, final.y]], color:'#fb7185', label:'ไม่ใช่', badge:[railX,(d.y+final.y)/2] },
+      { from:decisionIdx, to:branches.yes, points:[bottom(d), top(yes)], color:'#34d399', width:3, label:'ใช่', badge:[d.x + d.w / 2 + 46, yesLabelY] },
+      { from:decisionIdx, to:branches.no, points:[right(d), [railX,d.y], [railX,final.y], [final.x + final.w / 2 + 5, final.y]], color:'#fb7185', width:3, label:'ไม่ใช่', badge:[railX + 26, noLabelY] },
       { from:branches.yes, to:finalIdx, points:[bottom(yes), top(final)], color:'#34d399' },
       { from:finalIdx, to:slots.length - 1, points:[bottom(final), top(end)], color:COL.indigoSoft }
     ];
@@ -1187,17 +1188,17 @@
 
   function drawSlot(s) {
     ctx.save();
-    ctx.setLineDash(s.filled ? [] : [7,6]);
-    ctx.strokeStyle = s.filled ? 'rgba(148,163,184,.35)' : 'rgba(129,140,248,.55)';
-    ctx.lineWidth = 2;
-    ctx.fillStyle = s.filled ? 'rgba(15,23,42,.18)' : 'rgba(30,41,59,.28)';
+    ctx.setLineDash(s.filled ? [] : [8,7]);
+    ctx.strokeStyle = s.filled ? 'rgba(148,163,184,.45)' : 'rgba(165,180,252,.9)';
+    ctx.lineWidth = s.filled ? 2 : 2.5;
+    ctx.fillStyle = s.filled ? 'rgba(15,23,42,.24)' : 'rgba(30,41,59,.52)';
     rr(s.x - s.w / 2, s.y - s.h / 2, s.w, s.h, 12);
     ctx.fill(); ctx.stroke();
     if (!s.filled) {
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(148,163,184,.75)';
-      ctx.font = '800 10px ui-sans-serif, system-ui, sans-serif';
-      ctx.fillText('SLOT '+(s.index+1),s.x,s.y+4,s.w-10);
+      ctx.fillStyle = 'rgba(226,232,240,.92)';
+      ctx.font = '900 11px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillText('ช่องคำตอบ '+(s.index+1),s.x,s.y+4,s.w-12);
     }
     ctx.restore();
   }
@@ -1206,12 +1207,12 @@
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 2;
     S.routes.forEach(route => {
       const points = route.points;
       ctx.strokeStyle = route.color;
+      ctx.lineWidth = route.width || 2;
       ctx.shadowColor = route.color;
-      ctx.shadowBlur = 5;
+      ctx.shadowBlur = route.width ? 8 : 5;
       ctx.beginPath();
       points.forEach(([x,y], i) => i ? ctx.lineTo(x,y) : ctx.moveTo(x,y));
       ctx.stroke();
@@ -1229,15 +1230,24 @@
     });
     S.routes.filter(r => r.label).forEach(route => {
       const [x,y] = route.badge;
-      ctx.font = '800 10px ui-sans-serif, system-ui, sans-serif';
-      const width = ctx.measureText(route.label).width + 14;
-      ctx.fillStyle = '#101b30';
+      ctx.font = '900 12px ui-sans-serif, system-ui, sans-serif';
+      const width = Math.max(70, ctx.measureText(route.label).width + 26);
+      const board = S.layout.board;
+      const bx = Math.max(board.x + width / 2 + 8, Math.min(board.x + board.w - width / 2 - 8, x));
+      ctx.fillStyle = '#0b1424';
       ctx.strokeStyle = route.color;
-      ctx.lineWidth = 1;
-      rr(x-width/2, y-10, width, 20, 8); ctx.fill(); ctx.stroke();
+      ctx.lineWidth = 2;
+      ctx.shadowColor = route.color;
+      ctx.shadowBlur = 8;
+      rr(bx - width / 2, y - 16, width, 32, 10); ctx.fill(); ctx.stroke();
+      ctx.shadowBlur = 0;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '800 8px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(148,163,184,.9)';
+      ctx.fillText('เงื่อนไข', bx, y - 7);
+      ctx.font = '900 12px ui-sans-serif, system-ui, sans-serif';
       ctx.fillStyle = route.color;
-      ctx.fillText(route.label,x,y);
+      ctx.fillText(route.label,bx,y + 7);
     });
     const merge = S.routes[S.routes.length - 1].points[0];
     ctx.fillStyle = '#a5b4fc';
